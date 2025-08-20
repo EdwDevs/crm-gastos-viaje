@@ -27,6 +27,8 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             padding-bottom: 70px;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .app-header {
@@ -114,6 +116,7 @@
             padding: 12px 15px;
             font-size: 1rem;
             border: 1px solid #ddd;
+            height: auto;
         }
         
         .btn-primary {
@@ -133,6 +136,12 @@
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border-left: 4px solid var(--secondary);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .expense-item:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
         
         .expense-item.gasolina {
@@ -165,7 +174,7 @@
         .expense-amount {
             font-weight: 700;
             color: var(--success);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
         
         .expense-category {
@@ -224,6 +233,11 @@
             background: #f1f2f6;
             border: none;
             color: var(--dark);
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.9);
         }
         
         .action-btn.edit {
@@ -372,12 +386,12 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 100;
             border: none;
+            transition: all 0.2s ease;
         }
         
-        @media (min-width: 768px) {
-            .fab {
-                bottom: 30px;
-            }
+        .fab:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         
         .loading {
@@ -399,6 +413,37 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Optimizaciones para móviles */
+        @media (max-width: 576px) {
+            .category-stats {
+                gap: 8px;
+            }
+            
+            .category-stat {
+                min-width: calc(50% - 5px);
+                padding: 10px;
+            }
+            
+            .expense-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .expense-amount {
+                font-size: 1.1rem;
+                align-self: flex-end;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stats-card .amount {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -410,7 +455,7 @@
     <!-- Stats Cards -->
     <div class="stats-card">
         <div class="label">Total Gastado</div>
-        <div class="amount" id="total-amount">$0.00</div>
+        <div class="amount" id="total-amount">$0</div>
         <div class="label">Este mes</div>
     </div>
     
@@ -515,7 +560,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Monto</label>
-                        <input type="number" class="form-control" id="expense-amount" placeholder="0.00" step="0.01" min="0" required>
+                        <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required>
                     </div>
                     
                     <div class="mb-3">
@@ -639,9 +684,9 @@
             return date;
         }
         
-        // Función para formatear moneda
+        // Función para formatear moneda sin decimales
         function formatCurrency(amount) {
-            return `$${parseFloat(amount).toFixed(2)}`;
+            return `$${Math.round(parseFloat(amount))}`;
         }
         
         // Función para cargar gastos desde Firestore
