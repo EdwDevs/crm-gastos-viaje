@@ -447,19 +447,16 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="app-header">
         <h1><i class="fas fa-suitcase"></i> Gastos de Viaje</h1>
     </div>
     
-    <!-- Stats Cards -->
     <div class="stats-card">
         <div class="label">Total Gastado</div>
         <div class="amount" id="total-amount">$0</div>
         <div class="label">Este mes</div>
     </div>
     
-    <!-- Category Stats -->
     <div class="category-stats">
         <div class="category-stat gasolina-stat">
             <div class="amount" id="gasolina-amount">$0</div>
@@ -479,7 +476,6 @@
         </div>
     </div>
     
-    <!-- Tabs -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab">
@@ -498,9 +494,7 @@
         </li>
     </ul>
     
-    <!-- Tab Content -->
     <div class="tab-content" id="myTabContent">
-        <!-- Expenses Tab -->
         <div class="tab-pane fade show active" id="expenses" role="tabpanel">
             <div class="filter-section">
                 <div class="filter-title">
@@ -532,7 +526,6 @@
             </div>
         </div>
         
-        <!-- Add Expense Tab -->
         <div class="tab-pane fade" id="add" role="tabpanel">
             <div class="form-card">
                 <h3><i class="fas fa-receipt me-2"></i> Nuevo Gasto</h3>
@@ -585,7 +578,6 @@
             </div>
         </div>
         
-        <!-- Reports Tab -->
         <div class="tab-pane fade" id="reports" role="tabpanel">
             <div class="form-card">
                 <h3><i class="fas fa-chart-pie me-2"></i> Reporte de Gastos</h3>
@@ -614,12 +606,10 @@
         </div>
     </div>
     
-    <!-- Floating Action Button -->
     <button class="fab" data-bs-toggle="tab" data-bs-target="#add">
         <i class="fas fa-plus"></i>
     </button>
     
-    <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <div class="nav-item active">
             <i class="fas fa-home"></i>
@@ -677,8 +667,9 @@
         
         // Función para formatear la fecha
         function formatDate(date) {
+            // ➕ CORRECCIÓN ZONA HORARIA: Se añade la opción timeZone: 'UTC' para evitar el desfase de un día.
             if (date instanceof Date) {
-                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                const options = { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' };
                 return date.toLocaleDateString('es-ES', options);
             }
             return date;
@@ -686,7 +677,7 @@
         
         // Función para formatear moneda sin decimales
         function formatCurrency(amount) {
-            return `$${Math.round(parseFloat(amount))}`;
+            return `$${new Intl.NumberFormat('es-CO').format(Math.round(parseFloat(amount)))}`;
         }
         
         // Función para cargar gastos desde Firestore
@@ -707,8 +698,8 @@
                 }
                 
                 if (dateFilter) {
-                    // Para filtrar por mes, creamos un rango de fechas
-                    const startDate = new Date(dateFilter + "-01");
+                    // ➕ CORRECCIÓN ZONA HORARIA: Asegura que el filtro de mes funcione correctamente en la zona horaria local.
+                    const startDate = new Date(dateFilter + "-01T00:00:00");
                     const endDate = new Date(startDate);
                     endDate.setMonth(endDate.getMonth() + 1);
                     
@@ -752,9 +743,13 @@
                     // Crear elemento de gasto
                     const expenseElement = document.createElement('div');
                     expenseElement.className = `expense-item ${expense.category}`;
+                    
+                    // ➕ CORRECCIÓN ZONA HORARIA: Asegura que la fecha se convierta correctamente desde Firebase.
+                    const displayDate = expense.date.toDate ? expense.date.toDate() : new Date(expense.date);
+                    
                     expenseElement.innerHTML = `
                         <div class="expense-header">
-                            <div class="expense-date">${formatDate(expense.date.toDate ? expense.date.toDate() : new Date(expense.date.seconds * 1000))}</div>
+                            <div class="expense-date">${formatDate(displayDate)}</div>
                             <div class="expense-amount">${formatCurrency(expense.amount)}</div>
                         </div>
                         <div class="expense-category ${expense.category}-category">${categoryNames[expense.category]}</div>
@@ -870,9 +865,10 @@
         // Función para agregar un nuevo gasto
         async function addExpense(expenseData) {
             try {
+                // ➕ CORRECCIÓN ZONA HORARIA: Asegura que la fecha se guarde como un objeto Date local.
                 const docRef = await addDoc(collection(db, "travel_expenses"), {
                     ...expenseData,
-                    date: new Date(expenseData.date)
+                    date: new Date(expenseData.date + 'T00:00:00') 
                 });
                 console.log("Gasto registrado con ID: ", docRef.id);
                 loadExpenses();
