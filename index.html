@@ -1,513 +1,750 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>CRM Gastos Viaje</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        :root{
-            --primary:#1e3a5f; --secondary:#3498db; --success:#27ae60; --danger:#e74c3c;
-            --muted:#7f8c8d; --glass: rgba(255,255,255,0.65); --radius:12px;
-        }
-        html { font-size: clamp(14px, 2.2vw, 16px); }
-        *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background: linear-gradient(135deg,#f5f7fa 0%, #e8ecf1 100%); padding-bottom: calc(72px + env(safe-area-inset-bottom, 12px)); }
-        .app-header { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color:white; padding: calc(12px + env(safe-area-inset-top,6px)) 16px; position: sticky; top:0; z-index:1200; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow: 0 6px 20px rgba(30,58,95,0.08); }
-        .app-header h1 { font-size:1.05rem; margin:0; display:flex; gap:.6rem; align-items:center; font-weight:700; }
-        .header-total { background: rgba(255,255,255,0.14); padding:6px 10px; border-radius:999px; font-weight:700; display:flex; align-items:center; gap:8px; font-size:0.95rem; backdrop-filter: blur(4px); }
-        .container-main{ padding:14px; }
-        .stats-card{ background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.6)); border-radius:10px; padding:12px; box-shadow:0 8px 20px rgba(12,18,28,0.04); display:flex; justify-content:space-between; gap:12px; align-items:center; }
-        .stats-card .amount{ font-weight:800; font-size:1.5rem; background:linear-gradient(90deg,var(--success), #1e8f55); -webkit-background-clip:text; color:transparent; }
-        .category-stats{ display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin:10px 0; }
-        .category-stat{ background: rgba(255,255,255,0.9); padding:10px; border-radius:10px; text-align:center; box-shadow:0 6px 18px rgba(12,18,28,0.04); }
-        .nav-tabs{ position:sticky; top:calc(56px + env(safe-area-inset-top,0px)); z-index:1000; background:rgba(255,255,255,0.9); border-bottom:1px solid #eef2f6; }
-        .form-card{ background:linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.6)); padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(12,18,28,0.04); }
-        .form-control, .form-select{ font-size:16px; padding:10px 12px; border-radius:8px; border:1.5px solid #e9eef3; }
-        .btn-primary{ background:linear-gradient(90deg,var(--secondary), #207bb2); border:none; border-radius:8px; padding:10px; font-weight:700; width:100%; box-shadow: 0 8px 20px rgba(32,123,178,0.14); }
-        .expense-item{ background:#fff; border-radius:10px; padding:12px; margin-bottom:10px; box-shadow:0 6px 18px rgba(12,18,28,0.04); border-left:5px solid var(--secondary); }
-        .expense-date{ color:var(--muted); font-weight:600; font-size:0.9rem; }
-        .expense-amount{ font-weight:800; color:var(--success); }
-        .expense-footer{ display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px dashed #f1f4f7; color:var(--muted); }
-        .action-btn{ min-width:44px; min-height:44px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; border:none; background:#fff; }
-        .bottom-nav{ position:fixed; left:0; right:0; bottom:env(safe-area-inset-bottom,8px); height:60px; background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96)); display:flex; align-items:center; justify-content:space-around; box-shadow:0 -8px 24px rgba(12,18,28,0.06); z-index:1200; padding-bottom:env(safe-area-inset-bottom,6px); }
-        .fab{ position:fixed; right:calc(16px + env(safe-area-inset-right,8px)); bottom:calc(84px + env(safe-area-inset-bottom,8px)); width:56px; height:56px; border-radius:50%; background:linear-gradient(90deg,var(--secondary), #207bb2); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 12px 28px rgba(32,123,178,0.18); z-index:1250; border:none; }
-        .loading{ text-align:center; padding:18px 8px; color:var(--muted); }
-        .spinner{ border:4px solid rgba(52,152,219,0.08); border-top:4px solid var(--secondary); width:36px; height:36px; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 8px; }
-        @keyframes spin{ 0%{ transform:rotate(0deg);} 100%{ transform:rotate(360deg);} }
-        .small-muted { font-size:0.9rem; color:var(--muted); margin-top:6px; }
-        @media (max-width:480px){ .category-stats{ grid-template-columns: repeat(2,1fr); } canvas#expenses-chart{ height:220px !important; } }
-    </style>
+  <meta charset="UTF-8" />
+  <!-- Nueva UI mobile-first con soporte safe-area y zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CRM Gastos Viaje</title>
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+  <style>
+    :root{
+      --bg-grad-1:#0f172a; /* slate-900 */
+      --bg-grad-2:#111827; /* gray-900 */
+      --glass: rgba(255,255,255,0.08);
+      --glass-2: rgba(255,255,255,0.06);
+      --stroke: rgba(255,255,255,0.12);
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --primary:#60a5fa;  /* blue-400 */
+      --primary-2:#3b82f6;/* blue-500 */
+      --success:#34d399;  /* emerald-400 */
+      --danger:#f87171;   /* red-400 */
+
+      --gasolina:#60a5fa;
+      --hotel:#a78bfa;
+      --comida:#34d399;
+      --bebida:#f59e0b;
+
+      --radius:16px;
+      --radius-sm:12px;
+      --shadow-xl: 0 20px 45px rgba(0,0,0,0.35);
+      --shadow-md: 0 10px 25px rgba(0,0,0,0.25);
+      --shadow-sm: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    html { font-size: clamp(14px, 2.2vw, 16px); }
+    *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 100% -10%, #1f2937 0%, transparent 50%),
+        radial-gradient(1000px 700px at -10% 0%, #111827 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg-grad-1), var(--bg-grad-2));
+      padding-bottom: calc(76px + env(safe-area-inset-bottom, 12px));
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    }
+
+    /* Top App Bar */
+    .topbar{
+      position: sticky; top:0; z-index: 1000;
+      padding: calc(10px + env(safe-area-inset-top, 6px)) 16px 10px;
+      background: linear-gradient(180deg, rgba(17,24,39,0.85), rgba(17,24,39,0.55));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--stroke);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .brand i{ color: var(--primary); font-size: 1.15rem; }
+    .brand h1{ margin:0; font-size:1rem; letter-spacing:.3px; font-weight:800; }
+
+    .badge-total{
+      display:flex; align-items:center; gap:10px;
+      background: linear-gradient(180deg, rgba(59,130,246,0.25), rgba(59,130,246,0.12));
+      border:1px solid rgba(96,165,250,0.35);
+      padding:8px 12px; border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+      min-height: 38px;
+    }
+    .badge-total i{ color: var(--primary); }
+    #trip-total-badge{ font-weight:900; color:#fff; }
+
+    /* Container */
+    .container-main{ padding: 14px; }
+
+    /* Cards glass */
+    .glass{
+      background: var(--glass);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Stats header card */
+    .stats-card{
+      display:flex; justify-content:space-between; align-items:center; gap:14px;
+      padding:14px;
+    }
+    .stats-card .label{ color: var(--muted); font-weight:600; font-size:.9rem; }
+    .stats-card .amount{
+      font-weight:900; font-size:1.6rem;
+      background: linear-gradient(90deg, var(--success), #10b981);
+      -webkit-background-clip:text; color:transparent;
+    }
+
+    /* Filters bar (chips) */
+    .filters{
+      display:grid; grid-template-columns: 1fr; gap:10px; margin-top:12px; padding:12px;
+    }
+    @media (min-width: 380px){
+      .filters{ grid-template-columns: repeat(3, 1fr); }
+    }
+    .chip{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .chip label{ color: var(--muted); font-weight:700; font-size:.85rem; margin:0 2px; }
+    .chip .form-control, .chip .form-select{
+      background: var(--glass-2); color: var(--text);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius-sm); padding:10px 12px; font-size:16px;
+    }
+    .chip .form-control:focus, .chip .form-select:focus{
+      outline:none; border-color: rgba(96,165,250,0.55);
+      box-shadow: 0 0 0 4px rgba(96,165,250,0.18);
+    }
+
+    /* Category tiles */
+    .category-grid{
+      margin-top:12px; display:grid; grid-template-columns: repeat(2, 1fr); gap:10px;
+    }
+    .cat-tile{
+      padding:12px; text-align:center; border-radius: var(--radius-sm);
+      background: var(--glass);
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow-sm);
+    }
+    .cat-tile .value{ font-weight:800; font-size:1.05rem; margin-top:6px; }
+    .gas .value{ color: var(--gasolina); }
+    .hot .value{ color: var(--hotel); }
+    .food .value{ color: var(--comida); }
+    .drink .value{ color: var(--bebida); }
+
+    /* Tabs redesigned */
+    .nav-tabs{
+      margin-top:12px; border: 1px solid var(--stroke); border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      overflow: hidden;
+    }
+    .nav-tabs .nav-link{
+      border:none; color: var(--muted); font-weight:800; letter-spacing:.3px;
+      padding:12px 14px;
+    }
+    .nav-tabs .nav-link.active{
+      color:#fff; background: linear-gradient(180deg, rgba(59,130,246,0.35), rgba(59,130,246,0.15));
+      border-right: 1px solid var(--stroke);
+    }
+
+    /* Expense list */
+    .expense-list{ margin-top:12px; }
+    .expense-item{
+      display:block; padding:12px; margin-bottom:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      border:1px solid var(--stroke); border-left:4px solid var(--primary-2);
+      border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);
+    }
+    .expense-item.gasolina{ border-left-color: var(--gasolina); }
+    .expense-item.hotel{ border-left-color: var(--hotel); }
+    .expense-item.comida{ border-left-color: var(--comida); }
+    .expense-item.bebida{ border-left-color: var(--bebida); }
+
+    .expense-header{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .expense-date{ color: var(--muted); font-weight:700; font-size:.9rem; }
+    .expense-amount{ font-weight:900; color: var(--success); }
+
+    .expense-category{
+      display:inline-block; margin-top:8px; padding:6px 10px; border-radius: 999px; font-weight:800; font-size:.82rem;
+      border:1px solid var(--stroke); background: rgba(255,255,255,0.06);
+    }
+    .gasolina-category{ color: var(--gasolina); }
+    .hotel-category{ color: var(--hotel); }
+    .comida-category{ color: var(--comida); }
+    .bebida-category{ color: var(--bebida); }
+
+    .expense-description{ margin-top:8px; font-weight:700; }
+    .expense-footer{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:10px; padding-top:10px; border-top: 1px dashed var(--stroke); color: var(--muted);
+    }
+    .action-btn{
+      min-width:44px; min-height:44px; border-radius: 10px; border:1px solid var(--stroke);
+      background: var(--glass-2); color: #fff;
+    }
+
+    /* Forms */
+    .form-card{ padding:14px; margin-top:12px; }
+    .form-card h3{ margin:0 0 10px; display:flex; gap:8px; align-items:center; font-size:1rem; color:#fff; }
+    .form-label{ color: var(--muted); font-weight:700; }
+
+    .btn-primary{
+      width:100%; padding:12px; border-radius: 12px; border: 1px solid rgba(96,165,250,0.35);
+      background: linear-gradient(180deg, rgba(59,130,246,0.35), rgba(59,130,246,0.22));
+      color:#fff; font-weight:900; letter-spacing:.3px;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-primary:active{ transform: translateY(1px); }
+
+    /* Chart container */
+    .chart-wrap{ margin:14px 0 0; padding:12px; }
+    canvas#expenses-chart{ width:100%; height:240px; }
+
+    /* FAB */
+    .fab{
+      position:fixed;
+      right: calc(16px + env(safe-area-inset-right, 8px));
+      bottom: calc(90px + env(safe-area-inset-bottom, 8px));
+      width:60px; height:60px; border-radius:50%;
+      background: linear-gradient(180deg, rgba(59,130,246,0.9), rgba(59,130,246,0.6));
+      border:1px solid rgba(96,165,250,0.5); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: var(--shadow-xl);
+      z-index:1200;
+    }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position: fixed; left:0; right:0; bottom:0; z-index:1100;
+      height: 64px; padding-bottom: env(safe-area-inset-bottom, 6px);
+      display:flex; align-items:center; justify-content:space-around; gap:6px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--stroke);
+    }
+    .bottom-nav .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; color: var(--muted); font-weight:800; font-size:.78rem; }
+    .bottom-nav .nav-item.active{ color:#fff; }
+
+    /* Loading */
+    .loading{ text-align:center; padding:18px 8px; color: var(--muted); }
+    .spinner{ border:4px solid rgba(96,165,250,0.12); border-top:4px solid var(--primary);
+      width:36px; height:36px; border-radius:50%; animation: spin 1s linear infinite; margin: 8px auto; }
+    @keyframes spin{ 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
+
+    /* Accessibility */
+    @media (max-width:480px){
+      .category-grid{ grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
 </head>
 <body>
-    <header class="app-header" role="banner">
-        <h1><i class="fas fa-plane-departure" aria-hidden="true"></i> Gastos de Viaje</h1>
-        <div class="header-total" aria-live="polite" title="Total del viaje seleccionado">
-            <i class="fas fa-wallet" style="opacity:.9"></i>
-            <div style="font-size:0.88rem; color:#fff;">Total (viaje):</div>
-            <div id="trip-total-badge" style="font-weight:900; color:#fff;">$0</div>
-        </div>
-    </header>
-
-    <main class="container-main" role="main">
-        <section class="stats-card" aria-live="polite">
-            <div>
-                <div class="label">Total Gastado (vista)</div>
-                <div class="amount" id="total-amount">$0</div>
-                <div class="small-muted">Período / Filtros aplicados</div>
-            </div>
-            <div style="min-width:120px; text-align:right;"></div>
-        </section>
-
-        <section class="category-stats" aria-hidden="false">
-            <div class="category-stat gasolina-stat"><div class="label">Gasolina</div><div class="amount" id="gasolina-amount">$0</div></div>
-            <div class="category-stat hotel-stat"><div class="label">Hotel</div><div class="amount" id="hotel-amount">$0</div></div>
-            <div class="category-stat comida-stat"><div class="label">Comida</div><div class="amount" id="comida-amount">$0</div></div>
-            <div class="category-stat bebida-stat"><div class="label">Bebida</div><div class="amount" id="bebida-amount">$0</div></div>
-        </section>
-
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation"><button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab"><i class="fas fa-list"></i> Gastos</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab"><i class="fas fa-plus-circle"></i> Agregar</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab"><i class="fas fa-chart-pie"></i> Reportes</button></li>
-        </ul>
-
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="expenses" role="tabpanel">
-                <div class="form-card">
-                    <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
-                        <div style="display:flex; gap:10px; align-items:center;"><i class="fas fa-filter"></i><strong>Filtros</strong></div>
-                    </div>
-
-                    <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:140px;">
-                            <label class="form-label">Categoría</label>
-                            <select class="form-select" id="filter-category"><option value="">Todas</option><option value="gasolina">Gasolina</option><option value="hotel">Hotel</option><option value="comida">Comida</option><option value="bebida">Bebida</option></select>
-                        </div>
-                        <div style="flex:1; min-width:140px;">
-                            <label class="form-label">Período</label>
-                            <input type="month" class="form-control" id="filter-date">
-                        </div>
-                        <div style="flex:1; min-width:140px;">
-                            <label class="form-label">Viaje</label>
-                            <select class="form-select" id="filter-trip"><option value="">Todas</option><option value="__NO_TRIP__">(Sin viaje)</option></select>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="expense-list" class="expense-list">
-                    <div class="loading"><div class="spinner" role="status" aria-hidden="true"></div><p>Cargando gastos...</p></div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="add" role="tabpanel">
-                <div class="form-card">
-                    <h3><i class="fas fa-plus-circle"></i> Registrar Gasto</h3>
-                    <form id="expense-form" novalidate>
-                        <div class="mb-3"><label class="form-label">Fecha</label><input type="date" class="form-control" id="expense-date" required></div>
-                        <div class="mb-3"><label class="form-label">Categoría</label><select class="form-select" id="expense-category" required><option value="">Seleccionar categoría</option><option value="gasolina">🚗 Gasolina</option><option value="hotel">🏨 Hotel</option><option value="comida">🍽️ Comida</option><option value="bebida">🥤 Bebida</option></select></div>
-                        <div class="mb-3"><label class="form-label">Descripción</label><input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required></div>
-                        <div class="mb-3">
-                            <label class="form-label">Monto</label>
-                            <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required>
-                            <div class="small-muted" style="display:flex; gap:8px; justify-content:space-between; margin-top:8px;">
-                                <div>Total actual (viaje):</div>
-                                <div id="current-total-form" style="font-weight:800;">$0</div>
-                            </div>
-                            <div class="small-muted" style="display:flex; gap:8px; justify-content:space-between;">
-                                <div>Total si guardas (viaje):</div>
-                                <div id="projected-total-form" style="font-weight:900;">$0</div>
-                            </div>
-                        </div>
-                        <div class="mb-3"><label class="form-label">Método de Pago</label><select class="form-select" id="expense-payment-method"><option value="Efectivo">💵 Efectivo</option><option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option><option value="Tarjeta de Débito">💳 Tarjeta de Débito</option><option value="Transferencia">📱 Transferencia</option></select></div>
-                        <div class="mb-3"><label class="form-label">Viaje (Opcional)</label><input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje"></div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle me-2"></i> Guardar Gasto</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="reports" role="tabpanel">
-                <div class="form-card">
-                    <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
-                    <div style="width:100%; height:240px; margin:12px 0;"><canvas id="expenses-chart" style="width:100%; height:100%;"></canvas></div>
-                    <div class="category-stats" style="margin:0;">
-                        <div class="category-stat gasolina-stat"><div class="label">Gasolina</div><div class="amount" id="report-gasolina">0%</div></div>
-                        <div class="category-stat hotel-stat"><div class="label">Hotel</div><div class="amount" id="report-hotel">0%</div></div>
-                        <div class="category-stat comida-stat"><div class="label">Comida</div><div class="amount" id="report-comida">0%</div></div>
-                        <div class="category-stat bebida-stat"><div class="label">Bebida</div><div class="amount" id="report-bebida">0%</div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <button class="fab" data-bs-toggle="tab" data-bs-target="#add" aria-label="Agregar gasto"><i class="fas fa-plus"></i></button>
-
-    <div class="bottom-nav" role="navigation" aria-label="Navegación inferior">
-        <div class="nav-item active"><i class="fas fa-home"></i><small>Inicio</small></div>
-        <div class="nav-item"><i class="fas fa-receipt"></i><small>Gastos</small></div>
-        <div class="nav-item"><i class="fas fa-chart-bar"></i><small>Reportes</small></div>
-        <div class="nav-item"><i class="fas fa-user-circle"></i><small>Perfil</small></div>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <i class="fas fa-plane-departure"></i>
+      <h1>Gastos de Viaje</h1>
     </div>
+    <div class="badge-total" title="Total del viaje seleccionado" aria-live="polite">
+      <i class="fas fa-wallet"></i>
+      <span style="color:#dbeafe;font-weight:800;">Viaje:</span>
+      <span id="trip-total-badge">$0</span>
+    </div>
+  </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <main class="container-main">
+    <!-- Stats -->
+    <section class="glass stats-card" aria-live="polite">
+      <div>
+        <div class="label">Total (vista actual)</div>
+        <div class="amount" id="total-amount">$0</div>
+        <div class="label">Con filtros aplicados</div>
+      </div>
+      <div style="min-width:110px;text-align:right;">
+        <!-- espacio lateral -->
+      </div>
+    </section>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <!-- Filters -->
+    <section class="glass filters">
+      <div class="chip">
+        <label for="filter-category">Categoría</label>
+        <select id="filter-category" class="form-select">
+          <option value="">Todas</option>
+          <option value="gasolina">Gasolina</option>
+          <option value="hotel">Hotel</option>
+          <option value="comida">Comida</option>
+          <option value="bebida">Bebida</option>
+        </select>
+      </div>
+      <div class="chip">
+        <label for="filter-date">Período</label>
+        <input id="filter-date" type="month" class="form-control"/>
+      </div>
+      <div class="chip">
+        <label for="filter-trip">Viaje</label>
+        <select id="filter-trip" class="form-select">
+          <option value="">Todas</option>
+          <option value="__NO_TRIP__">(Sin viaje)</option>
+        </select>
+      </div>
+    </section>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
-            authDomain: "crm-gastos-viaje.firebaseapp.com",
-            projectId: "crm-gastos-viaje",
-            storageBucket: "crm-gastos-viaje.firebasestorage.app",
-            messagingSenderId: "1030088242238",
-            appId: "1:1030088242238:web:53c2dcb3fc6642f82e4d6f"
+    <!-- Category tiles -->
+    <section class="category-grid">
+      <div class="cat-tile gas">
+        <div style="color:#cbd5e1;font-weight:700;">Gasolina</div>
+        <div class="value" id="gasolina-amount">$0</div>
+      </div>
+      <div class="cat-tile hot">
+        <div style="color:#cbd5e1;font-weight:700;">Hotel</div>
+        <div class="value" id="hotel-amount">$0</div>
+      </div>
+      <div class="cat-tile food">
+        <div style="color:#cbd5e1;font-weight:700;">Comida</div>
+        <div class="value" id="comida-amount">$0</div>
+      </div>
+      <div class="cat-tile drink">
+        <div style="color:#cbd5e1;font-weight:700;">Bebida</div>
+        <div class="value" id="bebida-amount">$0</div>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs glass" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab">
+          <i class="fas fa-list"></i> Gastos
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab">
+          <i class="fas fa-plus-circle"></i> Agregar
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+          <i class="fas fa-chart-pie"></i> Reportes
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+      <!-- GASTOS -->
+      <div class="tab-pane fade show active" id="expenses" role="tabpanel">
+        <div id="expense-list" class="expense-list">
+          <div class="loading">
+            <div class="spinner" role="status" aria-hidden="true"></div>
+            <p>Cargando gastos...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGREGAR -->
+      <div class="tab-pane fade" id="add" role="tabpanel">
+        <div class="glass form-card">
+          <h3><i class="fas fa-plus-circle"></i> Registrar Gasto</h3>
+          <form id="expense-form" novalidate>
+            <div class="mb-3">
+              <label class="form-label" for="expense-date">Fecha</label>
+              <input type="date" class="form-control" id="expense-date" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-category">Categoría</label>
+              <select class="form-select" id="expense-category" required>
+                <option value="">Seleccionar categoría</option>
+                <option value="gasolina">🚗 Gasolina</option>
+                <option value="hotel">🏨 Hotel</option>
+                <option value="comida">🍽️ Comida</option>
+                <option value="bebida">🥤 Bebida</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-description">Descripción</label>
+              <input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-amount">Monto</label>
+              <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required />
+              <div class="d-flex justify-content-between mt-2" style="color:var(--muted);">
+                <small><strong>Total actual (viaje):</strong></small>
+                <small id="current-total-form" style="font-weight:900;color:#fff;">$0</small>
+              </div>
+              <div class="d-flex justify-content-between" style="color:var(--muted);">
+                <small><strong>Total si guardas (viaje):</strong></small>
+                <small id="projected-total-form" style="font-weight:900;color:#fff;">$0</small>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-payment-method">Método de Pago</label>
+              <select class="form-select" id="expense-payment-method">
+                <option value="Efectivo">💵 Efectivo</option>
+                <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
+                <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
+                <option value="Transferencia">📱 Transferencia</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-trip">Viaje (Opcional)</label>
+              <input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje" />
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check-circle me-2"></i> Guardar Gasto
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- REPORTES -->
+      <div class="tab-pane fade" id="reports" role="tabpanel">
+        <div class="glass form-card">
+          <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
+          <div class="glass chart-wrap">
+            <canvas id="expenses-chart"></canvas>
+          </div>
+          <div class="category-grid" style="margin-top:12px;">
+            <div class="cat-tile gas"><div style="color:#cbd5e1;font-weight:700;">Gasolina</div><div class="value" id="report-gasolina">0%</div></div>
+            <div class="cat-tile hot"><div style="color:#cbd5e1;font-weight:700;">Hotel</div><div class="value" id="report-hotel">0%</div></div>
+            <div class="cat-tile food"><div style="color:#cbd5e1;font-weight:700;">Comida</div><div class="value" id="report-comida">0%</div></div>
+            <div class="cat-tile drink"><div style="color:#cbd5e1;font-weight:700;">Bebida</div><div class="value" id="report-bebida">0%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FAB -->
+  <button class="fab" data-bs-toggle="tab" data-bs-target="#add" aria-label="Agregar gasto">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navegación">
+    <div class="nav-item active"><i class="fas fa-home"></i><small>Inicio</small></div>
+    <div class="nav-item"><i class="fas fa-receipt"></i><small>Gastos</small></div>
+    <div class="nav-item"><i class="fas fa-chart-bar"></i><small>Reportes</small></div>
+    <div class="nav-item"><i class="fas fa-user-circle"></i><small>Perfil</small></div>
+  </nav>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- App JS (misma lógica; UI renovada) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
+      authDomain: "crm-gastos-viaje.firebaseapp.com",
+      projectId: "crm-gastos-viaje",
+      storageBucket: "crm-gastos-viaje.firebasestorage.app",
+      messagingSenderId: "1030088242238",
+      appId: "1:1030088242238:web:53c2dcb3fc6642f82e4d6f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const categoryNames  = { gasolina:"Gasolina", hotel:"Hotel", comida:"Comida", bebida:"Bebida" };
+    const categoryColors = { gasolina:"#60a5fa", hotel:"#a78bfa", comida:"#34d399", bebida:"#f59e0b" };
+
+    const tripTotals = {}; // cache por viaje
+
+    const $ = (sel)=> document.querySelector(sel);
+
+    function formatDate(date){
+      try{
+        if(!(date instanceof Date)) date = new Date(date);
+        if(isNaN(date)) return '';
+        return date.toLocaleDateString('es-CO',{year:'numeric',month:'short',day:'numeric'});
+      }catch{return '';}
+    }
+    function formatCurrency(n){ n = Number(n)||0; return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`; }
+    function debounce(fn, wait=300){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; }
+
+    /* ---------- Trips (dropdown) ---------- */
+    async function fetchTripsAndPopulate(){
+      try{
+        const snap = await getDocs(collection(db,"travel_expenses"));
+        const set = new Set();
+        snap.forEach(d=>{
+          const t = d.data().trip;
+          if(t && String(t).trim()!=='') set.add(String(t));
+        });
+        const sel = $("#filter-trip");
+        sel.querySelectorAll('option:not([value=""]):not([value="__NO_TRIP__"])').forEach(o=>o.remove());
+        Array.from(set).sort().forEach(tr=>{
+          const opt = document.createElement('option'); opt.value = tr; opt.textContent = tr; sel.appendChild(opt);
+        });
+      }catch(e){ console.error("Trips error:",e); }
+    }
+
+    async function computeTotalForTrip(tripKey){
+      if(tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey]==='number') return tripTotals[tripKey];
+      try{
+        const base = collection(db,"travel_expenses");
+        let q;
+        if(tripKey==="") q=query(base);
+        else if(tripKey==="__NO_TRIP__") q=query(base, where("trip","==",null));
+        else q=query(base, where("trip","==",tripKey));
+        const snap = await getDocs(q);
+        let tot=0; snap.forEach(s=> tot += Number(s.data().amount)||0 );
+        tripTotals[tripKey]=tot; return tot;
+      }catch(e){ console.error("Total trip error:",e); return 0; }
+    }
+
+    /* ---------- Carga de gastos (con filtros) ---------- */
+    async function loadExpenses(){
+      const list = $("#expense-list");
+      list.innerHTML = `<div class="loading"><div class="spinner"></div><p>Cargando gastos...</p></div>`;
+      try{
+        const category = $("#filter-category").value;
+        const monthVal = $("#filter-date").value;
+        const tripVal  = $("#filter-trip").value;
+
+        const base = collection(db,"travel_expenses");
+        const cs   = [];
+
+        if(category) cs.push(where("category","==",category));
+        if(monthVal){
+          const [y,m]=monthVal.split('-');
+          const start = new Date(Date.UTC(parseInt(y), parseInt(m)-1, 1));
+          const end   = new Date(Date.UTC(parseInt(y), parseInt(m),   1));
+          cs.push(where("date",">=",start)); cs.push(where("date","<",end));
+        }
+        if(tripVal){
+          if(tripVal==="__NO_TRIP__") cs.push(where("trip","==",null));
+          else cs.push(where("trip","==",tripVal));
+        }
+
+        const qy = cs.length ? query(base, ...cs, orderBy("date","desc")) : query(base, orderBy("date","desc"));
+        const snap = await getDocs(qy);
+
+        let total=0;
+        const tot = { gasolina:0, hotel:0, comida:0, bebida:0 };
+
+        list.innerHTML = "";
+        if(snap.empty){
+          list.innerHTML = `<div class="loading"><p>No hay gastos con estos filtros</p></div>`;
+          updateStats(0, tot);
+          // actualizar badge de viaje
+          const t = await computeTotalForTrip(tripVal || "");
+          $("#trip-total-badge").textContent = formatCurrency(t);
+          return;
+        }
+
+        snap.forEach(d=>{
+          const e = { id:d.id, ...d.data() };
+          const amt = Number(e.amount)||0; total += amt;
+          if(tot.hasOwnProperty(e.category)) tot[e.category]+=amt;
+
+          const el = document.createElement('div');
+          el.className = `expense-item ${e.category||''}`;
+          const dd = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
+          el.innerHTML = `
+            <div class="expense-header">
+              <div class="expense-date">${formatDate(dd)}</div>
+              <div class="expense-amount">${formatCurrency(amt)}</div>
+            </div>
+            <div class="expense-category ${e.category}-category">${categoryNames[e.category]||'Otra'}</div>
+            <div class="expense-description">${e.description||'Sin descripción'}</div>
+            <div class="expense-footer">
+              <div>${e.paymentMethod||'No especificado'}</div>
+              <div>
+                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+
+        updateStats(total, tot);
+
+        // Eliminar
+        list.querySelectorAll(".action-btn.delete").forEach(btn=>{
+          btn.addEventListener("click", async ()=>{
+            const id = btn.getAttribute("data-id");
+            await deleteExpense(id);
+          });
+        });
+
+        // Badge de viaje
+        const tripTotal = await computeTotalForTrip($("#filter-trip").value || "");
+        $("#trip-total-badge").textContent = formatCurrency(tripTotal);
+
+      }catch(e){
+        console.error("Load error:",e);
+        list.innerHTML = `<div class="loading"><p>Error al cargar. Reintenta.</p></div>`;
+      }
+    }
+
+    /* ---------- Stats + Chart ---------- */
+    function updateStats(totalAmount, catTotals){
+      $("#total-amount").textContent   = formatCurrency(totalAmount);
+      $("#gasolina-amount").textContent= formatCurrency(catTotals.gasolina);
+      $("#hotel-amount").textContent   = formatCurrency(catTotals.hotel);
+      $("#comida-amount").textContent  = formatCurrency(catTotals.comida);
+      $("#bebida-amount").textContent  = formatCurrency(catTotals.bebida);
+      updateReportChart(totalAmount, catTotals);
+    }
+
+    function updateReportChart(total, catTotals){
+      const ctx = $("#expenses-chart");
+      if(!ctx) return;
+      if(window.expensesChart) window.expensesChart.destroy();
+      window.expensesChart = new Chart(ctx.getContext('2d'), {
+        type:'doughnut',
+        data:{
+          labels:['Gasolina','Hotel','Comida','Bebida'],
+          datasets:[{
+            data:[catTotals.gasolina, catTotals.hotel, catTotals.comida, catTotals.bebida],
+            backgroundColor:[categoryColors.gasolina, categoryColors.hotel, categoryColors.comida, categoryColors.bebida],
+            borderWidth:2, borderColor:'rgba(255,255,255,0.9)'
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{ position:'bottom', labels:{ color:'#e5e7eb' } },
+            tooltip:{ callbacks:{ label: (c)=> `${c.label}: ${formatCurrency(c.parsed)}` } }
+          }
+        }
+      });
+
+      const pct = (v)=> total ? Math.round((v/total)*100) : 0;
+      $("#report-gasolina").textContent = `${pct(catTotals.gasolina)}%`;
+      $("#report-hotel").textContent    = `${pct(catTotals.hotel)}%`;
+      $("#report-comida").textContent   = `${pct(catTotals.comida)}%`;
+      $("#report-bebida").textContent   = `${pct(catTotals.bebida)}%`;
+    }
+
+    /* ---------- CRUD ---------- */
+    async function addExpense(data){
+      try{
+        const [y,m,d] = data.date.split('-');
+        const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
+        await addDoc(collection(db,"travel_expenses"), { ...data, date: dateUTC, createdAt: new Date() });
+
+        // invalidar cache
+        const k = data.trip && String(data.trip).trim()!=='' ? String(data.trip) : "__NO_TRIP__";
+        tripTotals[k] = undefined; tripTotals[""] = undefined;
+
+        // repoblar viajes por si es nuevo
+        await fetchTripsAndPopulate();
+        return true;
+      }catch(e){ console.error("Add error:",e); return false; }
+    }
+
+    async function deleteExpense(id){
+      if(!confirm('¿Eliminar este gasto?')) return;
+      try{
+        await deleteDoc(doc(db,"travel_expenses", id));
+        // invalidar cache completa (simple)
+        for(const k in tripTotals) tripTotals[k] = undefined;
+        await fetchTripsAndPopulate();
+        await loadExpenses();
+      }catch(e){ console.error("Delete error:",e); alert('Error al eliminar.'); }
+    }
+
+    /* ---------- Totales en el formulario (por viaje) ---------- */
+    const debouncedComputeTripForm = debounce(async (tripText)=>{
+      const key = tripText && tripText.trim()!=='' ? tripText.trim() : "";
+      const tot = await computeTotalForTrip(key==="" ? "" : key);
+      $("#current-total-form").textContent   = formatCurrency(tot);
+      const amt = Number($("#expense-amount").value)||0;
+      $("#projected-total-form").textContent = formatCurrency(tot + amt);
+    }, 300);
+
+    function updateProjectedFromAmount(){
+      const amt = Number($("#expense-amount").value)||0;
+      const tripText = $("#expense-trip").value;
+      const key = tripText && tripText.trim()!=='' ? tripText.trim() : "";
+      const current = (tripTotals.hasOwnProperty(key) && typeof tripTotals[key]==='number') ? tripTotals[key] : 0;
+      $("#projected-total-form").textContent = formatCurrency(current + amt);
+    }
+
+    /* ---------- Bootstrap tabs + eventos ---------- */
+    const debouncedLoad = debounce(loadExpenses, 250);
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      // defaults
+      const today = new Date();
+      $("#expense-date").value = today.toISOString().split('T')[0];
+      $("#filter-date").value  = today.toISOString().slice(0,7);
+
+      // trips
+      await fetchTripsAndPopulate();
+
+      // carga inicial
+      await loadExpenses();
+
+      // submit
+      $("#expense-form").addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const btn = e.currentTarget.querySelector('button[type="submit"]');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Guardando...';
+        btn.disabled = true;
+
+        const data = {
+          date: $("#expense-date").value,
+          category: $("#expense-category").value,
+          description: $("#expense-description").value,
+          amount: parseFloat($("#expense-amount").value),
+          paymentMethod: $("#expense-payment-method").value,
+          trip: ($("#expense-trip").value || null)
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        if(!data.category){ alert('Selecciona una categoría'); btn.innerHTML=orig; btn.disabled=false; return; }
+        if(!data.amount || data.amount<=0){ alert('El monto debe ser mayor a cero'); btn.innerHTML=orig; btn.disabled=false; return; }
 
-        const categoryNames = { gasolina: "Gasolina", hotel: "Hotel", comida: "Comida", bebida: "Bebida" };
-        const categoryColors = { gasolina: "#3498db", hotel: "#9b59b6", comida: "#2ecc71", bebida: "#e67e22" };
-
-        function formatDate(date) {
-            try { if (!(date instanceof Date)) date = new Date(date); if (isNaN(date)) return ''; return date.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' }); }
-            catch { return ''; }
-        }
-        function formatCurrency(amount) { const n = Number(amount) || 0; return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`; }
-
-        function debounce(fn, wait = 300){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=> fn.apply(this,args), wait); }; }
-
-        // CACHE simple de totales por viaje para evitar múltiples getDocs repetidos
-        const tripTotals = {}; // key -> number
-
-        // Helper: recoge lista de trips únicos desde la colección (excluye null/''), y rellena select #filter-trip.
-        async function fetchTripsAndPopulate() {
-            try {
-                const qSnap = await getDocs(collection(db, "travel_expenses"));
-                const tripsSet = new Set();
-                qSnap.forEach(d => {
-                    const t = d.data().trip;
-                    if (t && String(t).trim() !== '') tripsSet.add(String(t));
-                });
-                const select = document.getElementById('filter-trip');
-                // Limpia excepto opciones base (Todas y Sin viaje)
-                select.querySelectorAll('option:not([value=""]):not([value="__NO_TRIP__"])').forEach(o => o.remove());
-                // Insertar trips ordenados
-                Array.from(tripsSet).sort().forEach(trip => {
-                    const opt = document.createElement('option');
-                    opt.value = trip;
-                    opt.textContent = trip;
-                    select.appendChild(opt);
-                });
-            } catch (e) {
-                console.error("Error trayendo trips:", e);
-            }
+        const ok = await addExpense(data);
+        if(ok){
+          e.currentTarget.reset();
+          $("#expense-date").value = new Date().toISOString().split('T')[0];
+          alert('✅ Gasto registrado');
+          new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
+          await fetchTripsAndPopulate();
+          for(const k in tripTotals) tripTotals[k]=undefined;
+          await loadExpenses();
+        }else{
+          alert('❌ Error al registrar');
         }
 
-        // Calcula total para un tripKey:
-        // - tripKey === "" => total de todos
-        // - "__NO_TRIP__" => trip == null
-        // - otherwise => trip == tripKey
-        async function computeTotalForTrip(tripKey) {
-            // Si está en cache, devolver rápido
-            if (tripTotals.hasOwnProperty(tripKey)) return tripTotals[tripKey];
+        btn.innerHTML = orig; btn.disabled=false;
+      });
 
-            try {
-                let q;
-                const base = collection(db, "travel_expenses");
-                if (tripKey === "") {
-                    q = query(base);
-                } else if (tripKey === "__NO_TRIP__") {
-                    q = query(base, where("trip", "==", null));
-                } else {
-                    q = query(base, where("trip", "==", tripKey));
-                }
-                const snap = await getDocs(q);
-                let total = 0;
-                snap.forEach(s => { total += Number(s.data().amount) || 0; });
-                tripTotals[tripKey] = total;
-                return total;
-            } catch (e) {
-                console.error("Error calculando total por viaje:", e);
-                return 0;
-            }
-        }
+      // filtros
+      $("#filter-category").addEventListener("change", debouncedLoad);
+      $("#filter-date").addEventListener("change", debouncedLoad);
+      $("#filter-trip").addEventListener("change", async function(){
+        const total = await computeTotalForTrip(this.value || "");
+        $("#trip-total-badge").textContent = formatCurrency(total);
+        debouncedLoad();
+      });
 
-        // Carga gastos aplicando filtros: category, date, trip
-        async function loadExpenses() {
-            const expenseList = document.getElementById('expense-list');
-            expenseList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando gastos...</p></div>';
+      // formulario: totales por viaje en vivo
+      $("#expense-trip").addEventListener("input", function(){ debouncedComputeTripForm(this.value); });
+      $("#expense-amount").addEventListener("input", updateProjectedFromAmount);
 
-            try {
-                const categoryFilter = document.getElementById('filter-category').value;
-                const dateFilter = document.getElementById('filter-date').value;
-                const tripFilter = document.getElementById('filter-trip').value; // "", "__NO_TRIP__", or trip string
+      // FAB abre "Agregar"
+      document.querySelector(".fab").addEventListener("click", ()=>{
+        new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+      });
 
-                let baseCol = collection(db, "travel_expenses");
-                const constraints = [];
-
-                if (categoryFilter) constraints.push(where("category", "==", categoryFilter));
-                if (dateFilter) {
-                    const [year, month] = dateFilter.split('-');
-                    const start = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1));
-                    const end = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
-                    constraints.push(where("date", ">=", start));
-                    constraints.push(where("date", "<", end));
-                }
-                if (tripFilter) {
-                    if (tripFilter === "__NO_TRIP__") constraints.push(where("trip", "==", null));
-                    else constraints.push(where("trip", "==", tripFilter));
-                }
-
-                const q = constraints.length ? query(baseCol, ...constraints, orderBy("date", "desc")) : query(baseCol, orderBy("date", "desc"));
-                const snap = await getDocs(q);
-
-                let totalAmount = 0;
-                const catTotals = { gasolina: 0, hotel: 0, comida: 0, bebida: 0 };
-
-                expenseList.innerHTML = '';
-
-                if (snap.empty) {
-                    expenseList.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>No hay gastos registrados</p><p class="text-muted">Comienza agregando tu primer gasto</p></div>`;
-                    updateStats(0, catTotals);
-                    // actualizar badge del trip: si se ha seleccionado trip, mostrar su total (calcular)
-                    const tripTotal = await computeTotalForTrip(tripFilter || "");
-                    document.getElementById('trip-total-badge').textContent = formatCurrency(tripTotal);
-                    return;
-                }
-
-                snap.forEach(docSnap => {
-                    const e = { id: docSnap.id, ...docSnap.data() };
-                    const amt = Number(e.amount) || 0;
-                    totalAmount += amt;
-                    if (catTotals.hasOwnProperty(e.category)) catTotals[e.category] += amt;
-
-                    const el = document.createElement('div');
-                    el.className = `expense-item ${e.category || ''}`;
-                    const displayDate = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
-                    el.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div class="expense-date">${formatDate(displayDate)}</div>
-                            <div class="expense-amount">${formatCurrency(amt)}</div>
-                        </div>
-                        <div class="expense-category ${e.category}-category" style="margin-top:8px; font-weight:700;">${categoryNames[e.category] || 'Otra'}</div>
-                        <div class="expense-description" style="margin-top:8px; font-weight:600;">${e.description || 'Sin descripción'}</div>
-                        <div class="expense-footer">
-                            <div>${e.paymentMethod || 'No especificado'}</div>
-                            <div>
-                                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    `;
-                    expenseList.appendChild(el);
-                });
-
-                updateStats(totalAmount, catTotals);
-
-                // listeners eliminar
-                expenseList.querySelectorAll('.action-btn.delete').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = btn.getAttribute('data-id');
-                        await deleteExpense(id);
-                    });
-                });
-
-                // actualizar badge del trip seleccionado
-                const tripTotal = await computeTotalForTrip(document.getElementById('filter-trip').value || "");
-                document.getElementById('trip-total-badge').textContent = formatCurrency(tripTotal);
-
-            } catch (error) {
-                console.error("Error al cargar gastos:", error);
-                document.getElementById('expense-list').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-danger"></i><p>Error al cargar los gastos</p><p class="text-muted">Por favor, intenta nuevamente</p></div>`;
-            }
-        }
-
-        function updateStats(totalAmount, categoryTotals) {
-            document.getElementById('total-amount').textContent = formatCurrency(totalAmount);
-            document.getElementById('gasolina-amount').textContent = formatCurrency(categoryTotals.gasolina);
-            document.getElementById('hotel-amount').textContent = formatCurrency(categoryTotals.hotel);
-            document.getElementById('comida-amount').textContent = formatCurrency(categoryTotals.comida);
-            document.getElementById('bebida-amount').textContent = formatCurrency(categoryTotals.bebida);
-            updateReportChart(totalAmount, categoryTotals);
-        }
-
-        function updateReportChart(totalAmount, categoryTotals) {
-            const ctx = document.getElementById('expenses-chart');
-            if (!ctx) return;
-            if (window.expensesChart) window.expensesChart.destroy();
-            window.expensesChart = new Chart(ctx.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Gasolina','Hotel','Comida','Bebida'],
-                    datasets: [{
-                        data: [categoryTotals.gasolina, categoryTotals.hotel, categoryTotals.comida, categoryTotals.bebida],
-                        backgroundColor: [categoryColors.gasolina, categoryColors.hotel, categoryColors.comida, categoryColors.bebida],
-                        borderWidth: 2, borderColor: '#fff'
-                    }]
-                },
-                options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${formatCurrency(ctx.parsed)}` } } } }
-            });
-
-            const total = totalAmount || 0;
-            document.getElementById('report-gasolina').textContent = `${ total ? Math.round((categoryTotals.gasolina/total)*100) : 0 }%`;
-            document.getElementById('report-hotel').textContent = `${ total ? Math.round((categoryTotals.hotel/total)*100) : 0 }%`;
-            document.getElementById('report-comida').textContent = `${ total ? Math.round((categoryTotals.comida/total)*100) : 0 }%`;
-            document.getElementById('report-bebida').textContent = `${ total ? Math.round((categoryTotals.bebida/total)*100) : 0 }%`;
-        }
-
-        async function addExpense(expenseData) {
-            try {
-                const [y,m,d] = expenseData.date.split('-');
-                const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m) - 1, parseInt(d)));
-                await addDoc(collection(db, "travel_expenses"), { ...expenseData, date: dateUTC, createdAt: new Date() });
-                // invalidar cache para el trip correspondiente y para "Todas"
-                const tripKey = expenseData.trip && String(expenseData.trip).trim() !== '' ? String(expenseData.trip) : "__NO_TRIP__";
-                tripTotals[tripKey] = undefined;
-                tripTotals[""] = undefined;
-                // re-popular trips (en caso se haya creado un nuevo trip)
-                await fetchTripsAndPopulate();
-                return true;
-            } catch (error) {
-                console.error("Error al registrar gasto:", error);
-                return false;
-            }
-        }
-
-        async function deleteExpense(id) {
-            if (!confirm('¿Estás seguro de eliminar este gasto?')) return;
-            try {
-                // Antes de delete: leer el documento para invalidar cache del trip específico
-                const docRef = doc(db, "travel_expenses", id);
-                // lectura ligera
-                const dSnap = await getDocs(query(collection(db, "travel_expenses"), where("__name__", "==", id)));
-                // eliminar
-                await deleteDoc(docRef);
-                // invalidar cache general; para simplicidad invalidamos todo (puedes optimizar)
-                for (const k in tripTotals) tripTotals[k] = undefined;
-                // recargar lista y trips
-                await fetchTripsAndPopulate();
-                await loadExpenses();
-            } catch (error) {
-                console.error("Error al eliminar gasto:", error);
-                alert('Error al eliminar el gasto. Por favor, intenta nuevamente.');
-            }
-        }
-
-        // Cuando en el formulario se escribe un trip, calculamos el total para ese trip (debounced)
-        const debouncedComputeTripTotalForForm = debounce(async function(tripText) {
-            let tripKey = tripText && tripText.trim() !== '' ? tripText.trim() : "";
-            // si user dejó campo vacío => mostrar total de "Todas"
-            const total = await computeTotalForTrip(tripKey === "" ? "" : tripKey);
-            document.getElementById('current-total-form').textContent = formatCurrency(total);
-            // actualizar proyectado en base al monto ingresado
-            const amount = Number(document.getElementById('expense-amount').value) || 0;
-            document.getElementById('projected-total-form').textContent = formatCurrency(total + amount);
-        }, 350);
-
-        // Si el monto cambia, actualizamos proyección (usa cache si existe)
-        function updateProjectedFromAmountInput() {
-            const amount = Number(document.getElementById('expense-amount').value) || 0;
-            const tripText = document.getElementById('expense-trip').value;
-            const tripKey = tripText && tripText.trim() !== '' ? tripText.trim() : "";
-            const current = tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey] === 'number' ? tripTotals[tripKey] : 0;
-            document.getElementById('projected-total-form').textContent = formatCurrency(current + amount);
-        }
-
-        const debouncedLoad = debounce(loadExpenses, 300);
-
-        document.addEventListener('DOMContentLoaded', async function() {
-            // fecha por defecto
-            const today = new Date();
-            document.getElementById('expense-date').value = today.toISOString().split('T')[0];
-            document.getElementById('filter-date').value = today.toISOString().slice(0,7);
-
-            // poblar trips en filtro
-            await fetchTripsAndPopulate();
-
-            // carga inicial
-            await loadExpenses();
-
-            // submit form
-            document.getElementById('expense-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalHTML = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Guardando...';
-                submitBtn.disabled = true;
-
-                const expenseData = {
-                    date: document.getElementById('expense-date').value,
-                    category: document.getElementById('expense-category').value,
-                    description: document.getElementById('expense-description').value,
-                    amount: parseFloat(document.getElementById('expense-amount').value),
-                    paymentMethod: document.getElementById('expense-payment-method').value,
-                    trip: (document.getElementById('expense-trip').value || null)
-                };
-
-                if (!expenseData.category) { alert('Por favor selecciona una categoría'); submitBtn.innerHTML = originalHTML; submitBtn.disabled = false; return; }
-                if (!expenseData.amount || expenseData.amount <= 0) { alert('El monto debe ser mayor a cero'); submitBtn.innerHTML = originalHTML; submitBtn.disabled = false; return; }
-
-                const success = await addExpense(expenseData);
-                if (success) {
-                    this.reset();
-                    document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-                    alert('✅ Gasto registrado exitosamente');
-                    // volver a Gastos
-                    const expensesTab = document.querySelector('[data-bs-target="#expenses"]');
-                    const tab = new bootstrap.Tab(expensesTab);
-                    tab.show();
-                    // recargar trips + lista y re-calcular cache
-                    await fetchTripsAndPopulate();
-                    for (const k in tripTotals) tripTotals[k] = undefined;
-                    await loadExpenses();
-                } else {
-                    alert('❌ Error al registrar el gasto. Por favor, intenta nuevamente.');
-                }
-
-                submitBtn.innerHTML = originalHTML;
-                submitBtn.disabled = false;
-            });
-
-            // listeners filtros
-            document.getElementById('filter-category').addEventListener('change', debouncedLoad);
-            document.getElementById('filter-date').addEventListener('change', debouncedLoad);
-            document.getElementById('filter-trip').addEventListener('change', async function() {
-                // cuando cambiamos el trip en el filtro, actualizar badge inmediatamente (usa cache si existe)
-                const tripKey = this.value || "";
-                const total = await computeTotalForTrip(tripKey);
-                document.getElementById('trip-total-badge').textContent = formatCurrency(total);
-                // recargar lista
-                debouncedLoad();
-            });
-
-            // inputs del formulario: al escribir trip -> recalcule total para ese viaje; al escribir monto -> proyecte
-            document.getElementById('expense-trip').addEventListener('input', function() {
-                debouncedComputeTripTotalForForm(this.value);
-            });
-            document.getElementById('expense-amount').addEventListener('input', updateProjectedFromAmountInput);
-
-            // FAB -> abrir add
-            document.querySelector('.fab').addEventListener('click', () => {
-                const addTabBtn = document.querySelector('[data-bs-target="#add"]');
-                new bootstrap.Tab(addTabBtn).show();
-            });
-
-            // Forzar resize del chart cuando se muestra la pestaña Reportes
-            document.querySelectorAll('#myTab button').forEach(btn => {
-                btn.addEventListener('shown.bs.tab', function() {
-                    if (this.getAttribute('data-bs-target') === '#reports') {
-                        setTimeout(() => { if (window.expensesChart) window.expensesChart.resize(); }, 120);
-                    }
-                });
-            });
-
-            // resize listener
-            window.addEventListener('resize', debounce(() => { if (window.expensesChart) window.expensesChart.resize(); }, 150));
+      // Chart resize al abrir tab reportes
+      document.querySelectorAll('#myTab button').forEach(btn=>{
+        btn.addEventListener('shown.bs.tab', function(){
+          if(this.getAttribute('data-bs-target')==='#reports'){
+            setTimeout(()=>{ if(window.expensesChart) window.expensesChart.resize(); }, 120);
+          }
         });
-    </script>
+      });
+    });
+  </script>
 </body>
 </html>
