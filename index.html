@@ -2,12 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Vista adaptada: usamos viewport-fit=cover y permitimos zoom (mejor accesibilidad) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CRM Gastos Viaje</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root {
+        :root{
             --primary: #1e3a5f;
             --secondary: #3498db;
             --success: #27ae60;
@@ -19,534 +20,224 @@
             --hotel: #9b59b6;
             --comida: #2ecc71;
             --bebida: #e67e22;
+
+            /* Fuente base adaptable: mejora escalado en móviles grandes como moto G56 (6.7") */
+            font-size: clamp(14px, 2.4vw, 18px);
         }
-        
-        * {
-            -webkit-tap-highlight-color: transparent;
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
         }
-        
+
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            padding-bottom: 70px;
+            padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)); /* espacio para bottom nav + safe area */
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
+            touch-action: manipulation;
         }
-        
+
         .app-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 20px 20px 18px;
+            padding: calc(12px + env(safe-area-inset-top, 0px)) 18px 12px; /* respetar status bar / notch */
             position: sticky;
             top: 0;
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
-        
+
         .app-header h1 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             margin: 0;
             font-weight: 700;
             display: flex;
             align-items: center;
-            letter-spacing: -0.5px;
+            gap: .5rem;
         }
-        
-        .app-header h1 i {
-            margin-right: 12px;
-            font-size: 1.6rem;
-        }
-        
+        .app-header h1 i { font-size: 1.4rem; }
+
         .stats-card {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 20px 15px 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 14px 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
         }
-        
+
         .stats-card .amount {
-            font-size: 2.2rem;
+            font-size: 1.6rem;
             font-weight: 800;
             background: linear-gradient(135deg, var(--success), #229954);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin: 8px 0;
+            margin: 6px 0;
         }
-        
-        .stats-card .label {
-            font-size: 0.95rem;
-            color: #7f8c8d;
-            font-weight: 500;
-        }
-        
+
         .nav-tabs {
             background: white;
-            border-bottom: 2px solid #e9ecef;
+            border-bottom: 1px solid #e9ecef;
             position: sticky;
-            top: 68px;
+            top: calc(56px + env(safe-area-inset-top, 0px));
             z-index: 999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        
+
         .nav-tabs .nav-link {
             color: #6c757d;
             font-weight: 600;
-            padding: 14px 20px;
+            padding: 10px 12px;
             border: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
         }
-        
-        .nav-tabs .nav-link.active {
-            color: var(--secondary);
-            background: transparent;
-            border-bottom: 3px solid var(--secondary);
-        }
-        
-        .nav-tabs .nav-link i {
-            margin-right: 6px;
-        }
-        
-        .tab-content {
-            padding: 15px;
-        }
-        
+
+        .tab-content { padding: 12px; }
+
         .form-card {
             background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
-        
-        .form-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 24px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            font-weight: 700;
-        }
-        
-        .form-card h3 i {
-            margin-right: 10px;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        
+
+        .form-card h3 { font-size: 1.1rem; margin-bottom: 14px; color: var(--primary); font-weight:700; display:flex; align-items:center; gap:.5rem; }
+
+        .form-label { font-weight:600; color:var(--dark); margin-bottom:6px; font-size:0.9rem; }
+
+        /* Inputs táctiles: tamaño mínimo 16px para evitar zoom móvil */
         .form-control, .form-select {
             border-radius: 10px;
-            padding: 14px 16px;
-            font-size: 1rem;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 1.5px solid #e9ecef;
+            transition: all 0.2s ease;
             height: auto;
         }
-        
+
         .form-control:focus, .form-select:focus {
             border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            box-shadow: 0 0 0 4px rgba(52,152,219,0.08);
+            outline: none;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, var(--secondary), #2980b9);
             border: none;
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 10px;
+            padding: 12px;
             font-weight: 700;
             width: 100%;
-            margin-top: 10px;
-            font-size: 1.05rem;
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-            transition: all 0.3s ease;
+            margin-top: 8px;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(52,152,219,0.22);
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        
+
         .expense-item {
             background: white;
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
             border-left: 5px solid var(--secondary);
-            transition: all 0.2s ease;
         }
-        
-        .expense-item:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 6px rgba(0,0,0,0.1);
-        }
-        
-        .expense-item.gasolina {
-            border-left-color: var(--gasolina);
-        }
-        
-        .expense-item.hotel {
-            border-left-color: var(--hotel);
-        }
-        
-        .expense-item.comida {
-            border-left-color: var(--comida);
-        }
-        
-        .expense-item.bebida {
-            border-left-color: var(--bebida);
-        }
-        
-        .expense-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .expense-date {
-            font-size: 0.85rem;
-            color: #95a5a6;
-            font-weight: 500;
-        }
-        
-        .expense-amount {
-            font-weight: 800;
-            color: var(--success);
-            font-size: 1.3rem;
-        }
-        
-        .expense-category {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .gasolina-category {
-            background: rgba(52, 152, 219, 0.15);
-            color: var(--gasolina);
-        }
-        
-        .hotel-category {
-            background: rgba(155, 89, 182, 0.15);
-            color: var(--hotel);
-        }
-        
-        .comida-category {
-            background: rgba(46, 204, 113, 0.15);
-            color: var(--comida);
-        }
-        
-        .bebida-category {
-            background: rgba(230, 126, 34, 0.15);
-            color: var(--bebida);
-        }
-        
-        .expense-description {
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-            color: var(--dark);
-            font-weight: 500;
-        }
-        
-        .expense-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            padding-top: 8px;
-            border-top: 1px solid #f1f2f6;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
+
+        .expense-date { font-size: 0.85rem; color:#95a5a6; font-weight:500; }
+        .expense-amount { font-weight:800; color:var(--success); font-size:1.1rem; }
+
+        .expense-category { display:inline-block; padding:5px 10px; border-radius:16px; font-size:0.8rem; font-weight:600; margin:8px 0; }
+
+        .gasolina-category { background: rgba(52,152,219,0.12); color:var(--gasolina); }
+        .hotel-category { background: rgba(155,89,182,0.12); color:var(--hotel); }
+        .comida-category { background: rgba(46,204,113,0.12); color:var(--comida); }
+        .bebida-category { background: rgba(230,126,34,0.12); color:var(--bebida); }
+
+        .expense-footer { display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#7f8c8d; padding-top:8px; border-top:1px solid #f1f2f6; }
+
+        .action-buttons { display:flex; gap:8px; align-items:center; }
         .action-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8f9fa;
-            border: none;
-            color: var(--dark);
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
+            min-width:44px; min-height:44px; width:auto;
+            border-radius:10px; display:flex; align-items:center; justify-content:center;
+            background:#f8f9fa; border:none; color:var(--dark); transition:all .12s ease; font-size:1rem;
         }
-        
-        .action-btn:active {
-            transform: scale(0.9);
-        }
-        
-        .action-btn.edit {
-            background: rgba(52, 152, 219, 0.1);
-            color: var(--secondary);
-        }
-        
-        .action-btn.delete {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger);
-        }
-        
-        .filter-section {
-            background: white;
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        }
-        
-        .filter-title {
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            font-size: 1.05rem;
-        }
-        
-        .filter-title i {
-            margin-right: 8px;
-        }
-        
-        .filter-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 0;
-        }
-        
-        .filter-item {
-            flex: 1;
-        }
-        
-        .filter-item label {
-            font-size: 0.85rem;
-            margin-bottom: 6px;
-            color: #7f8c8d;
-            font-weight: 600;
-        }
-        
-        .category-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            padding: 0 15px;
-            margin-bottom: 15px;
-        }
-        
-        .category-stat {
-            background: white;
-            border-radius: 14px;
-            padding: 16px;
-            text-align: center;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            transition: all 0.2s ease;
-        }
-        
-        .category-stat:active {
-            transform: scale(0.97);
-        }
-        
-        .category-stat .amount {
-            font-weight: 800;
-            font-size: 1.2rem;
-            margin: 8px 0;
-        }
-        
-        .category-stat .label {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            font-weight: 600;
-        }
-        
-        .gasolina-stat {
-            border-top: 4px solid var(--gasolina);
-        }
-        
-        .gasolina-stat .amount {
-            color: var(--gasolina);
-        }
-        
-        .hotel-stat {
-            border-top: 4px solid var(--hotel);
-        }
-        
-        .hotel-stat .amount {
-            color: var(--hotel);
-        }
-        
-        .comida-stat {
-            border-top: 4px solid var(--comida);
-        }
-        
-        .comida-stat .amount {
-            color: var(--comida);
-        }
-        
-        .bebida-stat {
-            border-top: 4px solid var(--bebida);
-        }
-        
-        .bebida-stat .amount {
-            color: var(--bebida);
-        }
-        
+        .action-btn:active{ transform: scale(.96); }
+        .action-btn.edit{ background: rgba(52,152,219,0.1); color:var(--secondary); }
+        .action-btn.delete{ background: rgba(231,76,60,0.08); color:var(--danger); }
+
+        .filter-section { background:white; border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
+        .filter-row { display:flex; gap:10px; }
+        .filter-item { flex:1; }
+
+        .category-stats { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; padding: 0 10px; margin-bottom:10px; }
+
+        .category-stat { background:white; border-radius:10px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        .category-stat .amount { font-weight:800; font-size:1.05rem; margin:6px 0; }
+        .gasolina-stat { border-top:3px solid var(--gasolina); } .hotel-stat { border-top:3px solid var(--hotel); }
+        .comida-stat { border-top:3px solid var(--comida); } .bebida-stat { border-top:3px solid var(--bebida); }
+
         .bottom-nav {
             position: fixed;
-            bottom: 0;
+            bottom: env(safe-area-inset-bottom, 8px);
             left: 0;
             right: 0;
             background: white;
             display: flex;
             border-top: 1px solid #e9ecef;
             z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+            padding-bottom: calc(env(safe-area-inset-bottom, 8px));
+            height: 56px;
         }
-        
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 10px 0;
-            color: #95a5a6;
-            font-size: 0.75rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        
-        .nav-item.active {
-            color: var(--secondary);
-        }
-        
-        .nav-item i {
-            display: block;
-            font-size: 1.3rem;
-            margin-bottom: 4px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #95a5a6;
-        }
-        
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-        
-        .empty-state p {
-            margin: 8px 0;
-            font-size: 1rem;
-        }
-        
-        .empty-state .text-muted {
-            font-size: 0.9rem;
-        }
-        
+
+        .nav-item { flex:1; text-align:center; padding:8px 0; color:#95a5a6; font-size:0.75rem; font-weight:600; }
+        .nav-item.active { color:var(--secondary); }
+        .nav-item i { display:block; font-size:1.15rem; margin-bottom:4px; }
+
         .fab {
             position: fixed;
-            bottom: 85px;
-            right: 20px;
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
+            bottom: calc(72px + env(safe-area-inset-bottom, 12px));
+            right: calc(16px + env(safe-area-inset-right, 8px));
+            width:56px; height:56px; border-radius:50%;
             background: linear-gradient(135deg, var(--secondary), #2980b9);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-            z-index: 100;
-            border: none;
-            transition: all 0.3s ease;
+            color:white; display:flex; align-items:center; justify-content:center;
+            font-size:1.3rem; box-shadow:0 6px 18px rgba(52,152,219,0.28); z-index:110;
+            border:none;
         }
-        
-        .fab:active {
-            transform: scale(0.92);
-            box-shadow: 0 3px 12px rgba(52, 152, 219, 0.4);
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        .spinner {
-            border: 4px solid rgba(52, 152, 219, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid var(--secondary);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-        
-        .loading p {
-            color: #7f8c8d;
-            font-weight: 500;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 576px) {
-            .app-header h1 {
-                font-size: 1.3rem;
-            }
-            
-            .stats-card .amount {
-                font-size: 1.9rem;
-            }
-            
-            .nav-tabs .nav-link {
-                padding: 12px 12px;
-                font-size: 0.9rem;
-            }
-            
-            .expense-header {
-                align-items: flex-start;
-            }
-            
-            .filter-row {
-                flex-direction: column;
-                gap: 12px;
-            }
+
+        .loading { text-align:center; padding: 26px 12px; }
+        .spinner { border:4px solid rgba(52,152,219,0.08); border-radius:50%; border-top:4px solid var(--secondary); width:36px; height:36px; animation:spin 1s linear infinite; margin:0 auto 10px; }
+        @keyframes spin{ 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+        .empty-state { text-align:center; padding:40px 12px; color:#95a5a6; }
+
+        /* Responsive / phone specific tuning (target ancho movil) */
+        @media (max-width: 430px) {
+            .filter-row { flex-direction: column; }
+            .category-stats { grid-template-columns: repeat(2, 1fr); }
+            .stats-card .amount { font-size: 1.35rem; }
+            .app-header h1 { font-size: 1.05rem; }
+            .nav-tabs .nav-link { padding: 10px 8px; font-size: 0.9rem; }
+            .form-card { padding: 14px; }
+            canvas#expenses-chart { height: 220px !important; } /* mobile-friendly */
         }
     </style>
 </head>
 <body>
-    <div class="app-header">
-        <h1><i class="fas fa-plane-departure"></i> Gastos de Viaje</h1>
+    <div class="app-header" role="banner">
+        <h1><i class="fas fa-plane-departure" aria-hidden="true"></i> Gastos de Viaje</h1>
     </div>
-    
-    <div class="stats-card">
+
+    <div class="stats-card" aria-live="polite">
         <div class="label">Total Gastado</div>
         <div class="amount" id="total-amount">$0</div>
         <div class="label">Período actual</div>
     </div>
-    
-    <div class="category-stats">
+
+    <div class="category-stats" aria-hidden="false">
         <div class="category-stat gasolina-stat">
             <div class="amount" id="gasolina-amount">$0</div>
             <div class="label">Gasolina</div>
@@ -564,35 +255,33 @@
             <div class="label">Bebida</div>
         </div>
     </div>
-    
+
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab">
-                <i class="fas fa-list"></i> Gastos
+            <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab" aria-controls="expenses" aria-selected="true">
+                <i class="fas fa-list" aria-hidden="true"></i> Gastos
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab">
-                <i class="fas fa-plus-circle"></i> Agregar
+            <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab" aria-controls="add" aria-selected="false">
+                <i class="fas fa-plus-circle" aria-hidden="true"></i> Agregar
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
-                <i class="fas fa-chart-pie"></i> Reportes
+            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">
+                <i class="fas fa-chart-pie" aria-hidden="true"></i> Reportes
             </button>
         </li>
     </ul>
-    
+
     <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="expenses" role="tabpanel">
-            <div class="filter-section">
-                <div class="filter-title">
-                    <i class="fas fa-filter"></i> Filtros
-                </div>
+        <div class="tab-pane fade show active" id="expenses" role="tabpanel" aria-labelledby="expenses-tab">
+            <div class="filter-section" aria-labelledby="filter-title">
+                <div class="filter-title" id="filter-title"><i class="fas fa-filter"></i> Filtros</div>
                 <div class="filter-row">
                     <div class="filter-item">
-                        <label>Categoría</label>
-                        <select class="form-select" id="filter-category">
+                        <label for="filter-category">Categoría</label>
+                        <select class="form-select" id="filter-category" aria-label="Filtrar por categoría">
                             <option value="">Todas</option>
                             <option value="gasolina">Gasolina</option>
                             <option value="hotel">Hotel</option>
@@ -601,32 +290,32 @@
                         </select>
                     </div>
                     <div class="filter-item">
-                        <label>Período</label>
-                        <input type="month" class="form-control" id="filter-date">
+                        <label for="filter-date">Período</label>
+                        <input type="month" class="form-control" id="filter-date" aria-label="Filtrar por mes">
                     </div>
                 </div>
             </div>
-            
-            <div class="expense-list" id="expense-list">
+
+            <div class="expense-list" id="expense-list" aria-live="polite">
                 <div class="loading">
-                    <div class="spinner"></div>
+                    <div class="spinner" role="status" aria-hidden="true"></div>
                     <p>Cargando gastos...</p>
                 </div>
             </div>
         </div>
-        
-        <div class="tab-pane fade" id="add" role="tabpanel">
+
+        <div class="tab-pane fade" id="add" role="tabpanel" aria-labelledby="add-tab">
             <div class="form-card">
-                <h3><i class="fas fa-plus-circle"></i> Registrar Gasto</h3>
-                <form id="expense-form">
+                <h3><i class="fas fa-plus-circle" aria-hidden="true"></i> Registrar Gasto</h3>
+                <form id="expense-form" novalidate>
                     <div class="mb-3">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" class="form-control" id="expense-date" required>
+                        <label class="form-label" for="expense-date">Fecha</label>
+                        <input type="date" class="form-control" id="expense-date" required aria-required="true">
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label class="form-label">Categoría</label>
-                        <select class="form-select" id="expense-category" required>
+                        <label class="form-label" for="expense-category">Categoría</label>
+                        <select class="form-select" id="expense-category" required aria-required="true">
                             <option value="">Seleccionar categoría</option>
                             <option value="gasolina">🚗 Gasolina</option>
                             <option value="hotel">🏨 Hotel</option>
@@ -634,46 +323,46 @@
                             <option value="bebida">🥤 Bebida</option>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label class="form-label">Descripción</label>
+                        <label class="form-label" for="expense-description">Descripción</label>
                         <input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label class="form-label">Monto</label>
+                        <label class="form-label" for="expense-amount">Monto</label>
                         <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label class="form-label">Método de Pago</label>
-                        <select class="form-select" id="expense-payment-method">
+                        <label class="form-label" for="expense-payment-method">Método de Pago</label>
+                        <select class="form-select" id="expense-payment-method" aria-label="Método de pago">
                             <option value="Efectivo">💵 Efectivo</option>
                             <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
                             <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
                             <option value="Transferencia">📱 Transferencia</option>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label class="form-label">Viaje (Opcional)</label>
+                        <label class="form-label" for="expense-trip">Viaje (Opcional)</label>
                         <input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje">
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check-circle me-2"></i> Guardar Gasto
+
+                    <button type="submit" class="btn btn-primary" aria-label="Guardar gasto">
+                        <i class="fas fa-check-circle me-2" aria-hidden="true"></i> Guardar Gasto
                     </button>
                 </form>
             </div>
         </div>
-        
-        <div class="tab-pane fade" id="reports" role="tabpanel">
+
+        <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
             <div class="form-card">
-                <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
-                <div class="text-center my-4">
-                    <canvas id="expenses-chart" style="max-height: 250px;"></canvas>
+                <h3><i class="fas fa-chart-pie" aria-hidden="true"></i> Distribución de Gastos</h3>
+                <div class="text-center my-3">
+                    <canvas id="expenses-chart" style="max-height: 260px; width:100%; height:220px;"></canvas>
                 </div>
-                <div class="category-stats" style="padding: 0; margin: 0;">
+                <div class="category-stats" style="padding:0; margin:0;">
                     <div class="category-stat gasolina-stat">
                         <div class="amount" id="report-gasolina">0%</div>
                         <div class="label">Gasolina</div>
@@ -694,36 +383,37 @@
             </div>
         </div>
     </div>
-    
+
     <button class="fab" data-bs-toggle="tab" data-bs-target="#add" aria-label="Agregar gasto">
-        <i class="fas fa-plus"></i>
+        <i class="fas fa-plus" aria-hidden="true"></i>
     </button>
-    
-    <div class="bottom-nav">
-        <div class="nav-item active">
-            <i class="fas fa-home"></i>
+
+    <div class="bottom-nav" role="navigation" aria-label="Navegación inferior">
+        <div class="nav-item active" role="button" tabindex="0" aria-pressed="true">
+            <i class="fas fa-home" aria-hidden="true"></i>
             <span>Inicio</span>
         </div>
-        <div class="nav-item">
-            <i class="fas fa-receipt"></i>
+        <div class="nav-item" role="button" tabindex="0">
+            <i class="fas fa-receipt" aria-hidden="true"></i>
             <span>Gastos</span>
         </div>
-        <div class="nav-item">
-            <i class="fas fa-chart-bar"></i>
+        <div class="nav-item" role="button" tabindex="0">
+            <i class="fas fa-chart-bar" aria-hidden="true"></i>
             <span>Reportes</span>
         </div>
-        <div class="nav-item">
-            <i class="fas fa-user-circle"></i>
+        <div class="nav-item" role="button" tabindex="0">
+            <i class="fas fa-user-circle" aria-hidden="true"></i>
             <span>Perfil</span>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        
+
         const firebaseConfig = {
             apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
             authDomain: "crm-gastos-viaje.firebaseapp.com",
@@ -732,66 +422,92 @@
             messagingSenderId: "1030088242238",
             appId: "1:1030088242238:web:53c2dcb3fc6642f82e4d6f"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        
+
         const categoryNames = {
             "gasolina": "Gasolina",
             "hotel": "Hotel",
             "comida": "Comida",
             "bebida": "Bebida"
         };
-        
+
         const categoryColors = {
             "gasolina": "#3498db",
             "hotel": "#9b59b6",
             "comida": "#2ecc71",
             "bebida": "#e67e22"
         };
-        
+
         function formatDate(date) {
-            if (date instanceof Date) {
-                const options = { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' };
-                return date.toLocaleDateString('es-ES', options);
+            try {
+                if (!(date instanceof Date)) {
+                    date = new Date(date);
+                }
+                if (isNaN(date)) return '';
+                // Uso de 'es-CO' para formato local (Bucaramanga, Colombia)
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('es-CO', options);
+            } catch (e) {
+                return '';
             }
-            return date;
         }
-        
+
         function formatCurrency(amount) {
-            return `$${new Intl.NumberFormat('es-CO').format(Math.round(parseFloat(amount)))}`;
+            const n = Number(amount) || 0;
+            return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`;
         }
-        
+
+        // Debounce helper para evitar llamadas excesivas a Firestore
+        function debounce(fn, wait = 300){
+            let t;
+            return function(...args){
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        // Carga gastos con manejo de filtros
         async function loadExpenses() {
             const expenseList = document.getElementById('expense-list');
             expenseList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando gastos...</p></div>';
-            
+
             try {
                 const categoryFilter = document.getElementById('filter-category').value;
                 const dateFilter = document.getElementById('filter-date').value;
-                
-                let q = collection(db, "travel_expenses");
-                
+
+                let baseCol = collection(db, "travel_expenses");
+                let q = baseCol;
+
+                const constraints = [];
+
                 if (categoryFilter) {
-                    q = query(q, where("category", "==", categoryFilter));
+                    constraints.push(where("category", "==", categoryFilter));
                 }
-                
+
                 if (dateFilter) {
                     const [year, month] = dateFilter.split('-');
                     const startDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1));
                     const endDate = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
-                    
-                    q = query(q, where("date", ">=", startDate), where("date", "<", endDate));
+                    constraints.push(where("date", ">=", startDate));
+                    constraints.push(where("date", "<", endDate));
                 }
-                
-                q = query(q, orderBy("date", "desc"));
-                
+
+                // aplicamos orderBy sobre date (desc)
+                // build query progressively to keep readability
+                if (constraints.length > 0) {
+                    q = query(baseCol, ...constraints, orderBy("date", "desc"));
+                } else {
+                    q = query(baseCol, orderBy("date", "desc"));
+                }
+
                 const querySnapshot = await getDocs(q);
                 let totalAmount = 0;
                 const categoryTotals = { gasolina: 0, hotel: 0, comida: 0, bebida: 0 };
-                
+
                 expenseList.innerHTML = '';
-                
+
                 if (querySnapshot.empty) {
                     expenseList.innerHTML = `
                         <div class="empty-state">
@@ -803,92 +519,89 @@
                     updateStats(0, categoryTotals);
                     return;
                 }
-                
+
+                // Render results
                 querySnapshot.forEach((docSnap) => {
                     const expense = { id: docSnap.id, ...docSnap.data() };
-                    
-                    totalAmount += parseFloat(expense.amount);
-                    
+
+                    const amt = Number(expense.amount) || 0;
+                    totalAmount += amt;
+
                     if (categoryTotals.hasOwnProperty(expense.category)) {
-                        categoryTotals[expense.category] += parseFloat(expense.amount);
+                        categoryTotals[expense.category] += amt;
                     }
-                    
+
                     const expenseElement = document.createElement('div');
-                    expenseElement.className = `expense-item ${expense.category}`;
-                    
-                    const displayDate = expense.date.toDate ? expense.date.toDate() : new Date(expense.date);
-                    
+                    expenseElement.className = `expense-item ${expense.category || ''}`;
+
+                    const displayDate = expense.date && expense.date.toDate ? expense.date.toDate() : new Date(expense.date);
+
                     expenseElement.innerHTML = `
-                        <div class="expense-header">
+                        <div class="expense-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                             <div class="expense-date">${formatDate(displayDate)}</div>
-                            <div class="expense-amount">${formatCurrency(expense.amount)}</div>
+                            <div class="expense-amount">${formatCurrency(amt)}</div>
                         </div>
-                        <div class="expense-category ${expense.category}-category">${categoryNames[expense.category]}</div>
+                        <div class="expense-category ${expense.category}-category">${categoryNames[expense.category] || 'Otra'}</div>
                         <div class="expense-description">${expense.description || 'Sin descripción'}</div>
                         <div class="expense-footer">
                             <div>${expense.paymentMethod || 'No especificado'}</div>
                             <div class="action-buttons">
-                                <button class="action-btn delete" data-id="${expense.id}" aria-label="Eliminar">
-                                    <i class="fas fa-trash"></i>
+                                <button class="action-btn delete" data-id="${expense.id}" aria-label="Eliminar gasto ${formatCurrency(amt)}">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
                     `;
                     expenseList.appendChild(expenseElement);
                 });
-                
+
                 updateStats(totalAmount, categoryTotals);
-                
-                document.querySelectorAll('.action-btn.delete').forEach(button => {
+
+                // Delegación de eventos: mejor rendimiento que añadir listeners por cada botón
+                expenseList.querySelectorAll('.action-btn.delete').forEach(button => {
                     button.addEventListener('click', function() {
                         const id = this.getAttribute('data-id');
                         deleteExpense(id);
                     });
                 });
-                
+
             } catch (error) {
                 console.error("Error al cargar gastos:", error);
+                // Si Firestore solicita índice, documentar al usuario
+                const msg = (error && error.message && /index/i.test(error.message)) ? 
+                    'Consulta requiere un índice en Firestore. Revisa la consola de Firebase para crear el índice.' :
+                    'Error al conectar con la base de datos. Por favor intenta nuevamente.';
                 expenseList.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-triangle text-danger"></i>
-                        <p>Error al cargar los gastos</p>
-                        <p class="text-muted">Por favor, intenta nuevamente</p>
+                        <p>${msg}</p>
+                        <p class="text-muted">Si el problema persiste, revisa reglas/índices en Firebase.</p>
                     </div>
                 `;
             }
         }
-        
+
         function updateStats(totalAmount, categoryTotals) {
             document.getElementById('total-amount').textContent = formatCurrency(totalAmount);
             document.getElementById('gasolina-amount').textContent = formatCurrency(categoryTotals.gasolina);
             document.getElementById('hotel-amount').textContent = formatCurrency(categoryTotals.hotel);
             document.getElementById('comida-amount').textContent = formatCurrency(categoryTotals.comida);
             document.getElementById('bebida-amount').textContent = formatCurrency(categoryTotals.bebida);
-            
+
             updateReportChart(totalAmount, categoryTotals);
         }
-        
+
         function updateReportChart(totalAmount, categoryTotals) {
-            const percentages = {};
             const categories = ['gasolina', 'hotel', 'comida', 'bebida'];
-            
-            categories.forEach(category => {
-                percentages[category] = totalAmount > 0 ? 
-                    Math.round((categoryTotals[category] / totalAmount) * 100) : 0;
-            });
-            
-            document.getElementById('report-gasolina').textContent = `${percentages.gasolina}%`;
-            document.getElementById('report-hotel').textContent = `${percentages.hotel}%`;
-            document.getElementById('report-comida').textContent = `${percentages.comida}%`;
-            document.getElementById('report-bebida').textContent = `${percentages.bebida}%`;
-            
+
             const ctx = document.getElementById('expenses-chart');
             if (!ctx) return;
-            
+
             if (window.expensesChart) {
                 window.expensesChart.destroy();
             }
-            
+
+            // Forzar maintainAspectRatio:false para control manual del alto en móviles
             window.expensesChart = new Chart(ctx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
@@ -906,19 +619,19 @@
                             categoryColors.comida,
                             categoryColors.bebida
                         ],
-                        borderWidth: 3,
+                        borderWidth: 2,
                         borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             display: true,
                             position: 'bottom',
                             labels: {
-                                padding: 15,
+                                padding: 12,
                                 font: {
                                     size: 12,
                                     weight: '600'
@@ -935,19 +648,26 @@
                     }
                 }
             });
+
+            // Actualizar porcentajes de reporte
+            const total = totalAmount || 0;
+            document.getElementById('report-gasolina').textContent = `${ total > 0 ? Math.round((categoryTotals.gasolina/total)*100) : 0 }%`;
+            document.getElementById('report-hotel').textContent = `${ total > 0 ? Math.round((categoryTotals.hotel/total)*100) : 0 }%`;
+            document.getElementById('report-comida').textContent = `${ total > 0 ? Math.round((categoryTotals.comida/total)*100) : 0 }%`;
+            document.getElementById('report-bebida').textContent = `${ total > 0 ? Math.round((categoryTotals.bebida/total)*100) : 0 }%`;
         }
-        
+
         async function addExpense(expenseData) {
             try {
                 const [year, month, day] = expenseData.date.split('-');
                 const dateUTC = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
-                
+
                 const docRef = await addDoc(collection(db, "travel_expenses"), {
                     ...expenseData,
                     date: dateUTC,
                     createdAt: new Date()
                 });
-                
+
                 console.log("Gasto registrado con ID:", docRef.id);
                 return true;
             } catch (error) {
@@ -955,37 +675,39 @@
                 return false;
             }
         }
-        
+
         async function deleteExpense(id) {
             if (confirm('¿Estás seguro de eliminar este gasto?')) {
                 try {
                     await deleteDoc(doc(db, "travel_expenses", id));
                     console.log("Gasto eliminado");
-                    loadExpenses();
+                    // recargar lista
+                    debouncedLoadExpenses();
                 } catch (error) {
                     console.error("Error al eliminar gasto:", error);
                     alert('Error al eliminar el gasto. Por favor, intenta nuevamente.');
                 }
             }
         }
-        
+
+        // --- Inicialización DOM
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             document.getElementById('expense-date').value = today.toISOString().split('T')[0];
-            
-            const currentMonth = today.toISOString().slice(0, 7);
-            document.getElementById('filter-date').value = currentMonth;
-            
+            document.getElementById('filter-date').value = today.toISOString().slice(0,7);
+
+            // Debounced loader para filtros
+            window.debouncedLoadExpenses = debounce(loadExpenses, 300);
+
             loadExpenses();
-            
+
             document.getElementById('expense-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
                 const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
+                const originalHTML = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Guardando...';
                 submitBtn.disabled = true;
-                
+
                 const expenseData = {
                     date: document.getElementById('expense-date').value,
                     category: document.getElementById('expense-category').value,
@@ -994,65 +716,76 @@
                     paymentMethod: document.getElementById('expense-payment-method').value,
                     trip: document.getElementById('expense-trip').value || null
                 };
-                
+
                 if (!expenseData.category) {
                     alert('Por favor selecciona una categoría');
-                    submitBtn.innerHTML = originalText;
+                    submitBtn.innerHTML = originalHTML;
                     submitBtn.disabled = false;
                     return;
                 }
-                
-                if (expenseData.amount <= 0) {
+
+                if (!expenseData.amount || expenseData.amount <= 0) {
                     alert('El monto debe ser mayor a cero');
-                    submitBtn.innerHTML = originalText;
+                    submitBtn.innerHTML = originalHTML;
                     submitBtn.disabled = false;
                     return;
                 }
-                
+
                 const success = await addExpense(expenseData);
-                
+
                 if (success) {
                     this.reset();
                     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-                    
                     alert('✅ Gasto registrado exitosamente');
-                    
-                    const expensesTab = document.querySelector('[data-bs-target="#expenses"]');
-                    const tab = new bootstrap.Tab(expensesTab);
+
+                    const expensesTabBtn = document.querySelector('[data-bs-target="#expenses"]');
+                    const tab = new bootstrap.Tab(expensesTabBtn);
                     tab.show();
-                    
-                    loadExpenses();
+
+                    // recargar (debounced por si viene de muchos cambios)
+                    debouncedLoadExpenses();
                 } else {
                     alert('❌ Error al registrar el gasto. Por favor, intenta nuevamente.');
                 }
-                
-                submitBtn.innerHTML = originalText;
+
+                submitBtn.innerHTML = originalHTML;
                 submitBtn.disabled = false;
             });
-            
-            document.getElementById('filter-category').addEventListener('change', loadExpenses);
-            document.getElementById('filter-date').addEventListener('change', loadExpenses);
-            
+
+            // filtros
+            document.getElementById('filter-category').addEventListener('change', debouncedLoadExpenses);
+            document.getElementById('filter-date').addEventListener('change', debouncedLoadExpenses);
+
+            // FAB -> abre agregar
             const fab = document.querySelector('.fab');
             fab.addEventListener('click', function() {
-                const addTab = document.querySelector('[data-bs-target="#add"]');
-                const tab = new bootstrap.Tab(addTab);
+                const addTabBtn = document.querySelector('[data-bs-target="#add"]');
+                const tab = new bootstrap.Tab(addTabBtn);
                 tab.show();
             });
-            
+
+            // cuando se muestra pestaña reportes forzamos resize del chart
             const navTabs = document.querySelectorAll('#myTab button');
-            navTabs.forEach(tab => {
-                tab.addEventListener('shown.bs.tab', function() {
+            navTabs.forEach(tabBtn => {
+                tabBtn.addEventListener('shown.bs.tab', function() {
                     const target = this.getAttribute('data-bs-target');
-                    
                     if (target === '#reports') {
                         setTimeout(() => {
                             if (window.expensesChart) {
                                 window.expensesChart.resize();
                             }
-                        }, 100);
+                        }, 120);
                     }
                 });
+            });
+
+            // resize listener (throttled básico)
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (window.expensesChart) window.expensesChart.resize();
+                }, 150);
             });
         });
     </script>
