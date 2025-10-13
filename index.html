@@ -2,411 +2,444 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- Vista adaptada: usamos viewport-fit=cover y permitimos zoom (mejor accesibilidad) -->
+    <!-- Viewport: permitimos zoom (accesibilidad) y soportamos safe-area -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CRM Gastos Viaje</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        /* ---------- Variables de diseño ---------- */
         :root{
             --primary: #1e3a5f;
             --secondary: #3498db;
             --success: #27ae60;
-            --warning: #f39c12;
             --danger: #e74c3c;
-            --light: #f8f9fa;
-            --dark: #2c3e50;
+            --muted: #7f8c8d;
+            --bg: rgba(245,247,250,0.9);
+            --glass: rgba(255,255,255,0.65);
+            --radius: 12px;
+            --spacing: 12px;
+            --elevation: 0 6px 20px rgba(30,58,95,0.08);
+            --card-elevation: 0 8px 24px rgba(15, 23, 42, 0.07);
+            --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
             --gasolina: #3498db;
             --hotel: #9b59b6;
             --comida: #2ecc71;
             --bebida: #e67e22;
-
-            /* Fuente base adaptable: mejora escalado en móviles grandes como moto G56 (6.7") */
-            font-size: clamp(14px, 2.4vw, 18px);
         }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-
-        html, body {
-            height: 100%;
-        }
+        /* Escalado tipográfico responsivo */
+        html { font-size: clamp(14px, 2.2vw, 16px); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)); /* espacio para bottom nav + safe area */
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
+            margin: 0;
+            font-family: var(--font-sans);
+            background: linear-gradient(135deg,#f5f7fa 0%, #e8ecf1 100%);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            min-height:100vh;
+            padding-bottom: calc(72px + env(safe-area-inset-bottom, 12px));
+            color: #1f2933;
             touch-action: manipulation;
         }
 
+        /* ---------- Header ---------- */
         .app-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: calc(12px + env(safe-area-inset-top, 0px)) 18px 12px; /* respetar status bar / notch */
+            color: #fff;
+            padding: calc(12px + env(safe-area-inset-top, 6px)) 16px;
             position: sticky;
             top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1200;
+            box-shadow: var(--elevation);
+            display:flex;
+            align-items:center;
+            gap:12px;
         }
-
         .app-header h1 {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             margin: 0;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
+            display:flex;
+            align-items:center;
+            gap:10px;
         }
-        .app-header h1 i { font-size: 1.4rem; }
+        .app-header i { font-size: 1.25rem; }
+
+        /* ---------- Cards & Layout ---------- */
+        .container-main {
+            padding: 14px;
+        }
 
         .stats-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 14px 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));
+            backdrop-filter: blur(6px);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin: 10px 0;
+            box-shadow: var(--card-elevation);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
         }
+        .stats-left { flex:1; }
+        .stats-card .label { color:var(--muted); font-weight:600; font-size:0.85rem; }
+        .stats-card .amount { font-size:1.6rem; font-weight:800; margin-top:6px; color:transparent;
+                               -webkit-background-clip:text; background:linear-gradient(90deg,var(--success), #1e8f55); }
 
-        .stats-card .amount {
-            font-size: 1.6rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--success), #229954);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 6px 0;
+        .category-stats {
+            display:grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap:10px;
+            margin: 8px 0 16px;
         }
+        .category-stat {
+            background: var(--glass);
+            border-radius: 10px;
+            padding: 10px;
+            text-align:center;
+            box-shadow: 0 6px 18px rgba(12, 18, 28, 0.04);
+            transition: transform .14s ease, box-shadow .14s ease;
+        }
+        .category-stat:active { transform: translateY(1px) scale(.998); }
+        .category-stat .amount { font-weight:800; font-size:1.05rem; margin-top:6px; }
 
+        /* ---------- Nav Tabs ---------- */
         .nav-tabs {
-            background: white;
-            border-bottom: 1px solid #e9ecef;
+            background: rgba(255,255,255,0.9);
+            border-bottom: 1px solid #eef2f6;
             position: sticky;
             top: calc(56px + env(safe-area-inset-top, 0px));
-            z-index: 999;
+            z-index: 1000;
+            margin-bottom: 8px;
         }
-
         .nav-tabs .nav-link {
-            color: #6c757d;
-            font-weight: 600;
-            padding: 10px 12px;
+            color: #6b7280;
+            font-weight:600;
+            padding: 10px 14px;
             border: none;
-            transition: all 0.2s ease;
-            font-size: 0.95rem;
         }
+        .nav-tabs .nav-link.active { color: var(--secondary); border-bottom: 3px solid var(--secondary); background:transparent; }
 
-        .tab-content { padding: 12px; }
-
+        /* ---------- Form Card ---------- */
         .form-card {
-            background: white;
+            background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.6));
             border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: var(--card-elevation);
         }
+        .form-card h3 { margin:0 0 10px; font-size:1rem; color:var(--primary); display:flex; gap:.5rem; align-items:center; }
 
-        .form-card h3 { font-size: 1.1rem; margin-bottom: 14px; color: var(--primary); font-weight:700; display:flex; align-items:center; gap:.5rem; }
+        .form-label { font-weight:600; color:var(--muted); margin-bottom:6px; font-size:0.9rem; }
 
-        .form-label { font-weight:600; color:var(--dark); margin-bottom:6px; font-size:0.9rem; }
-
-        /* Inputs táctiles: tamaño mínimo 16px para evitar zoom móvil */
         .form-control, .form-select {
             border-radius: 10px;
             padding: 12px 14px;
-            font-size: 16px;
-            border: 1.5px solid #e9ecef;
-            transition: all 0.2s ease;
+            font-size:16px; /* evita reflow por zoom móvil */
+            border: 1.5px solid #e9eef3;
             height: auto;
+            transition: box-shadow .14s ease, transform .14s ease;
+            background: rgba(255,255,255,0.9);
         }
-
         .form-control:focus, .form-select:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 4px rgba(52,152,219,0.08);
             outline: none;
+            box-shadow: 0 6px 20px rgba(52,152,219,0.08);
+            border-color: var(--secondary);
+            transform: translateY(-1px);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            background: linear-gradient(90deg, var(--secondary) 0%, #207bb2 100%);
             border: none;
             border-radius: 10px;
             padding: 12px;
-            font-weight: 700;
-            width: 100%;
-            margin-top: 8px;
-            font-size: 1rem;
-            box-shadow: 0 4px 10px rgba(52,152,219,0.22);
+            font-weight:700;
+            width:100%;
+            box-shadow: 0 8px 20px rgba(32,123,178,0.18);
+            transition: transform .12s ease, box-shadow .12s ease;
         }
+        .btn-primary:active { transform: translateY(1px); box-shadow: 0 4px 12px rgba(32,123,178,0.12); }
 
+        /* ---------- Expense item ---------- */
         .expense-item {
-            background: white;
-            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.84));
+            border-radius: 10px;
             padding: 12px;
             margin-bottom: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            box-shadow: 0 6px 18px rgba(10,20,30,0.04);
             border-left: 5px solid var(--secondary);
+            transition: transform .12s ease, box-shadow .12s ease;
         }
+        .expense-item:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(10,20,30,0.06); }
+        .expense-header { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .expense-date { color: var(--muted); font-size:0.85rem; font-weight:600; }
+        .expense-amount { font-weight:800; color:var(--success); font-size:1.05rem; }
 
-        .expense-date { font-size: 0.85rem; color:#95a5a6; font-weight:500; }
-        .expense-amount { font-weight:800; color:var(--success); font-size:1.1rem; }
-
-        .expense-category { display:inline-block; padding:5px 10px; border-radius:16px; font-size:0.8rem; font-weight:600; margin:8px 0; }
-
+        .expense-category { display:inline-block; padding:5px 10px; border-radius:18px; font-weight:700; font-size:0.82rem; margin-top:8px; }
         .gasolina-category { background: rgba(52,152,219,0.12); color:var(--gasolina); }
         .hotel-category { background: rgba(155,89,182,0.12); color:var(--hotel); }
         .comida-category { background: rgba(46,204,113,0.12); color:var(--comida); }
         .bebida-category { background: rgba(230,126,34,0.12); color:var(--bebida); }
 
-        .expense-footer { display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#7f8c8d; padding-top:8px; border-top:1px solid #f1f2f6; }
+        .expense-description { margin-top:8px; font-weight:600; color:#17212a; }
 
-        .action-buttons { display:flex; gap:8px; align-items:center; }
-        .action-btn {
-            min-width:44px; min-height:44px; width:auto;
-            border-radius:10px; display:flex; align-items:center; justify-content:center;
-            background:#f8f9fa; border:none; color:var(--dark); transition:all .12s ease; font-size:1rem;
-        }
-        .action-btn:active{ transform: scale(.96); }
-        .action-btn.edit{ background: rgba(52,152,219,0.1); color:var(--secondary); }
-        .action-btn.delete{ background: rgba(231,76,60,0.08); color:var(--danger); }
+        .expense-footer { display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed #f1f4f7; color:var(--muted); font-size:0.9rem; margin-top:10px; }
+        .action-btn { min-width:44px; min-height:44px; border-radius:10px; border:none; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 10px rgba(10,20,30,0.04); transition: transform .08s ease; }
+        .action-btn:active { transform: scale(.96); }
+        .action-btn.delete { color: var(--danger); }
 
-        .filter-section { background:white; border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
-        .filter-row { display:flex; gap:10px; }
-        .filter-item { flex:1; }
-
-        .category-stats { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; padding: 0 10px; margin-bottom:10px; }
-
-        .category-stat { background:white; border-radius:10px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
-        .category-stat .amount { font-weight:800; font-size:1.05rem; margin:6px 0; }
-        .gasolina-stat { border-top:3px solid var(--gasolina); } .hotel-stat { border-top:3px solid var(--hotel); }
-        .comida-stat { border-top:3px solid var(--comida); } .bebida-stat { border-top:3px solid var(--bebida); }
-
+        /* ---------- Bottom nav & FAB ---------- */
         .bottom-nav {
             position: fixed;
-            bottom: env(safe-area-inset-bottom, 8px);
             left: 0;
             right: 0;
-            background: white;
-            display: flex;
-            border-top: 1px solid #e9ecef;
-            z-index: 1000;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-            padding-bottom: calc(env(safe-area-inset-bottom, 8px));
-            height: 56px;
+            bottom: env(safe-area-inset-bottom, 8px);
+            height: 60px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));
+            display:flex;
+            align-items:center;
+            justify-content:space-around;
+            box-shadow: 0 -8px 24px rgba(12,18,28,0.06);
+            z-index: 1200;
+            padding-bottom: env(safe-area-inset-bottom, 6px);
         }
-
-        .nav-item { flex:1; text-align:center; padding:8px 0; color:#95a5a6; font-size:0.75rem; font-weight:600; }
-        .nav-item.active { color:var(--secondary); }
-        .nav-item i { display:block; font-size:1.15rem; margin-bottom:4px; }
+        .bottom-nav .nav-item { text-align:center; color: #9aa4ad; font-weight:700; font-size:12px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .bottom-nav .nav-item.active { color: var(--secondary); }
 
         .fab {
             position: fixed;
-            bottom: calc(72px + env(safe-area-inset-bottom, 12px));
             right: calc(16px + env(safe-area-inset-right, 8px));
-            width:56px; height:56px; border-radius:50%;
-            background: linear-gradient(135deg, var(--secondary), #2980b9);
-            color:white; display:flex; align-items:center; justify-content:center;
-            font-size:1.3rem; box-shadow:0 6px 18px rgba(52,152,219,0.28); z-index:110;
-            border:none;
+            bottom: calc(84px + env(safe-area-inset-bottom, 8px));
+            width:60px; height:60px; border-radius:50%;
+            background: linear-gradient(90deg,var(--secondary), #207bb2);
+            color:#fff; display:flex; align-items:center; justify-content:center; box-shadow: 0 12px 28px rgba(32,123,178,0.18);
+            z-index:1250; border:none;
+            transition: transform .12s ease;
         }
+        .fab:active { transform: scale(.96); }
 
-        .loading { text-align:center; padding: 26px 12px; }
-        .spinner { border:4px solid rgba(52,152,219,0.08); border-radius:50%; border-top:4px solid var(--secondary); width:36px; height:36px; animation:spin 1s linear infinite; margin:0 auto 10px; }
-        @keyframes spin{ 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+        /* ---------- Loading skeleton ---------- */
+        .skeleton {
+            display:block;
+            height:12px;
+            background: linear-gradient(90deg, rgba(240,240,240,0.9), rgba(230,230,230,0.7), rgba(240,240,240,0.9));
+            background-size: 200% 100%;
+            animation: shimmer 1.2s linear infinite;
+            border-radius: 6px;
+            margin: 8px 0;
+        }
+        @keyframes shimmer { 0%{ background-position: 200% 0 } 100%{ background-position: -200% 0 } }
 
-        .empty-state { text-align:center; padding:40px 12px; color:#95a5a6; }
+        .loading { text-align:center; padding:20px 8px; color:var(--muted); }
+        .spinner { border:4px solid rgba(52,152,219,0.08); border-top:4px solid var(--secondary); width:36px; height:36px; border-radius:50%; animation: spin 1s linear infinite; margin: 6px auto; }
+        @keyframes spin{ 0%{ transform:rotate(0deg) } 100%{ transform: rotate(360deg) } }
 
-        /* Responsive / phone specific tuning (target ancho movil) */
-        @media (max-width: 430px) {
-            .filter-row { flex-direction: column; }
-            .category-stats { grid-template-columns: repeat(2, 1fr); }
-            .stats-card .amount { font-size: 1.35rem; }
-            .app-header h1 { font-size: 1.05rem; }
-            .nav-tabs .nav-link { padding: 10px 8px; font-size: 0.9rem; }
-            .form-card { padding: 14px; }
-            canvas#expenses-chart { height: 220px !important; } /* mobile-friendly */
+        /* Responsive */
+        @media (max-width: 480px){
+            .category-stats { grid-template-columns: repeat(2, 1fr); gap:8px; }
+            .stats-card { flex-direction:column; align-items:flex-start; gap:8px; }
+            .app-header h1 { font-size:1rem; }
+            canvas#expenses-chart { height: 220px !important; }
         }
     </style>
 </head>
 <body>
-    <div class="app-header" role="banner">
+    <header class="app-header" role="banner">
         <h1><i class="fas fa-plane-departure" aria-hidden="true"></i> Gastos de Viaje</h1>
-    </div>
+    </header>
 
-    <div class="stats-card" aria-live="polite">
-        <div class="label">Total Gastado</div>
-        <div class="amount" id="total-amount">$0</div>
-        <div class="label">Período actual</div>
-    </div>
+    <main class="container-main" role="main">
+        <!-- Stats -->
+        <section class="stats-card" aria-live="polite">
+            <div class="stats-left">
+                <div class="label">Total Gastado</div>
+                <div id="total-amount" class="amount">$0</div>
+                <div class="label" style="font-weight:600; font-size:.85rem; margin-top:4px;">Período actual</div>
+            </div>
+            <div style="min-width:110px; text-align:right;">
+                <!-- espacio para icono o resumen -->
+            </div>
+        </section>
 
-    <div class="category-stats" aria-hidden="false">
-        <div class="category-stat gasolina-stat">
-            <div class="amount" id="gasolina-amount">$0</div>
-            <div class="label">Gasolina</div>
-        </div>
-        <div class="category-stat hotel-stat">
-            <div class="amount" id="hotel-amount">$0</div>
-            <div class="label">Hotel</div>
-        </div>
-        <div class="category-stat comida-stat">
-            <div class="amount" id="comida-amount">$0</div>
-            <div class="label">Comida</div>
-        </div>
-        <div class="category-stat bebida-stat">
-            <div class="amount" id="bebida-amount">$0</div>
-            <div class="label">Bebida</div>
-        </div>
-    </div>
+        <!-- categorías -->
+        <section class="category-stats" aria-hidden="false">
+            <div class="category-stat gasolina-stat">
+                <div class="label">Gasolina</div>
+                <div class="amount" id="gasolina-amount">$0</div>
+            </div>
+            <div class="category-stat hotel-stat">
+                <div class="label">Hotel</div>
+                <div class="amount" id="hotel-amount">$0</div>
+            </div>
+            <div class="category-stat comida-stat">
+                <div class="label">Comida</div>
+                <div class="amount" id="comida-amount">$0</div>
+            </div>
+            <div class="category-stat bebida-stat">
+                <div class="label">Bebida</div>
+                <div class="amount" id="bebida-amount">$0</div>
+            </div>
+        </section>
 
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab" aria-controls="expenses" aria-selected="true">
-                <i class="fas fa-list" aria-hidden="true"></i> Gastos
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab" aria-controls="add" aria-selected="false">
-                <i class="fas fa-plus-circle" aria-hidden="true"></i> Agregar
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">
-                <i class="fas fa-chart-pie" aria-hidden="true"></i> Reportes
-            </button>
-        </li>
-    </ul>
+        <!-- Navegación interna -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab" aria-controls="expenses" aria-selected="true">
+                    <i class="fas fa-list" aria-hidden="true"></i> Gastos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab" aria-controls="add" aria-selected="false">
+                    <i class="fas fa-plus-circle" aria-hidden="true"></i> Agregar
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">
+                    <i class="fas fa-chart-pie" aria-hidden="true"></i> Reportes
+                </button>
+            </li>
+        </ul>
 
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="expenses" role="tabpanel" aria-labelledby="expenses-tab">
-            <div class="filter-section" aria-labelledby="filter-title">
-                <div class="filter-title" id="filter-title"><i class="fas fa-filter"></i> Filtros</div>
-                <div class="filter-row">
-                    <div class="filter-item">
-                        <label for="filter-category">Categoría</label>
-                        <select class="form-select" id="filter-category" aria-label="Filtrar por categoría">
-                            <option value="">Todas</option>
-                            <option value="gasolina">Gasolina</option>
-                            <option value="hotel">Hotel</option>
-                            <option value="comida">Comida</option>
-                            <option value="bebida">Bebida</option>
-                        </select>
+        <div class="tab-content" id="myTabContent">
+            <!-- GASTOS -->
+            <div class="tab-pane fade show active" id="expenses" role="tabpanel" aria-labelledby="expenses-tab">
+                <div class="form-card filter-section" aria-labelledby="filter-title">
+                    <div class="filter-title" id="filter-title" style="font-weight:700; display:flex; gap:8px; align-items:center;">
+                        <i class="fas fa-filter" aria-hidden="true"></i> Filtros
                     </div>
-                    <div class="filter-item">
-                        <label for="filter-date">Período</label>
-                        <input type="month" class="form-control" id="filter-date" aria-label="Filtrar por mes">
+                    <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:140px;">
+                            <label for="filter-category" class="form-label">Categoría</label>
+                            <select id="filter-category" class="form-select">
+                                <option value="">Todas</option>
+                                <option value="gasolina">Gasolina</option>
+                                <option value="hotel">Hotel</option>
+                                <option value="comida">Comida</option>
+                                <option value="bebida">Bebida</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:140px;">
+                            <label for="filter-date" class="form-label">Período</label>
+                            <input id="filter-date" type="month" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="expense-list" class="expense-list" aria-live="polite">
+                    <!-- skeleton temporales (mejor UX mientras carga) -->
+                    <div class="loading">
+                        <div class="spinner" role="status" aria-hidden="true"></div>
+                        <p>Cargando gastos...</p>
+                        <div style="margin-top:14px;">
+                            <div class="skeleton" style="width:70%; height:14px;"></div>
+                            <div class="skeleton" style="width:50%; height:12px;"></div>
+                            <div class="skeleton" style="width:90%; height:12px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="expense-list" id="expense-list" aria-live="polite">
-                <div class="loading">
-                    <div class="spinner" role="status" aria-hidden="true"></div>
-                    <p>Cargando gastos...</p>
+            <!-- AGREGAR -->
+            <div class="tab-pane fade" id="add" role="tabpanel" aria-labelledby="add-tab">
+                <div class="form-card">
+                    <h3><i class="fas fa-plus-circle"></i> Registrar Gasto</h3>
+                    <form id="expense-form" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="expense-date">Fecha</label>
+                            <input type="date" id="expense-date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="expense-category">Categoría</label>
+                            <select id="expense-category" class="form-select" required>
+                                <option value="">Seleccionar categoría</option>
+                                <option value="gasolina">🚗 Gasolina</option>
+                                <option value="hotel">🏨 Hotel</option>
+                                <option value="comida">🍽️ Comida</option>
+                                <option value="bebida">🥤 Bebida</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="expense-description">Descripción</label>
+                            <input type="text" id="expense-description" class="form-control" placeholder="Detalles del gasto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="expense-amount">Monto</label>
+                            <input type="number" id="expense-amount" class="form-control" placeholder="0" min="0" step="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="expense-payment-method">Método de Pago</label>
+                            <select id="expense-payment-method" class="form-select">
+                                <option value="Efectivo">💵 Efectivo</option>
+                                <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
+                                <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
+                                <option value="Transferencia">📱 Transferencia</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="expense-trip">Viaje (Opcional)</label>
+                            <input type="text" id="expense-trip" class="form-control" placeholder="Identificador del viaje">
+                        </div>
+                        <button type="submit" class="btn btn-primary" aria-label="Guardar gasto">
+                            <i class="fas fa-check-circle me-2" aria-hidden="true"></i> Guardar Gasto
+                        </button>
+                    </form>
                 </div>
             </div>
-        </div>
 
-        <div class="tab-pane fade" id="add" role="tabpanel" aria-labelledby="add-tab">
-            <div class="form-card">
-                <h3><i class="fas fa-plus-circle" aria-hidden="true"></i> Registrar Gasto</h3>
-                <form id="expense-form" novalidate>
-                    <div class="mb-3">
-                        <label class="form-label" for="expense-date">Fecha</label>
-                        <input type="date" class="form-control" id="expense-date" required aria-required="true">
+            <!-- REPORTES -->
+            <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                <div class="form-card">
+                    <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
+                    <div style="width:100%; height:240px; margin:12px 0;">
+                        <canvas id="expenses-chart" style="width:100%; height:100%;"></canvas>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="expense-category">Categoría</label>
-                        <select class="form-select" id="expense-category" required aria-required="true">
-                            <option value="">Seleccionar categoría</option>
-                            <option value="gasolina">🚗 Gasolina</option>
-                            <option value="hotel">🏨 Hotel</option>
-                            <option value="comida">🍽️ Comida</option>
-                            <option value="bebida">🥤 Bebida</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="expense-description">Descripción</label>
-                        <input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="expense-amount">Monto</label>
-                        <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="expense-payment-method">Método de Pago</label>
-                        <select class="form-select" id="expense-payment-method" aria-label="Método de pago">
-                            <option value="Efectivo">💵 Efectivo</option>
-                            <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
-                            <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
-                            <option value="Transferencia">📱 Transferencia</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="expense-trip">Viaje (Opcional)</label>
-                        <input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" aria-label="Guardar gasto">
-                        <i class="fas fa-check-circle me-2" aria-hidden="true"></i> Guardar Gasto
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
-            <div class="form-card">
-                <h3><i class="fas fa-chart-pie" aria-hidden="true"></i> Distribución de Gastos</h3>
-                <div class="text-center my-3">
-                    <canvas id="expenses-chart" style="max-height: 260px; width:100%; height:220px;"></canvas>
-                </div>
-                <div class="category-stats" style="padding:0; margin:0;">
-                    <div class="category-stat gasolina-stat">
-                        <div class="amount" id="report-gasolina">0%</div>
-                        <div class="label">Gasolina</div>
-                    </div>
-                    <div class="category-stat hotel-stat">
-                        <div class="amount" id="report-hotel">0%</div>
-                        <div class="label">Hotel</div>
-                    </div>
-                    <div class="category-stat comida-stat">
-                        <div class="amount" id="report-comida">0%</div>
-                        <div class="label">Comida</div>
-                    </div>
-                    <div class="category-stat bebida-stat">
-                        <div class="amount" id="report-bebida">0%</div>
-                        <div class="label">Bebida</div>
+                    <div class="category-stats" style="margin:0;">
+                        <div class="category-stat gasolina-stat">
+                            <div class="label">Gasolina</div>
+                            <div class="amount" id="report-gasolina">0%</div>
+                        </div>
+                        <div class="category-stat hotel-stat">
+                            <div class="label">Hotel</div>
+                            <div class="amount" id="report-hotel">0%</div>
+                        </div>
+                        <div class="category-stat comida-stat">
+                            <div class="label">Comida</div>
+                            <div class="amount" id="report-comida">0%</div>
+                        </div>
+                        <div class="category-stat bebida-stat">
+                            <div class="label">Bebida</div>
+                            <div class="amount" id="report-bebida">0%</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <button class="fab" data-bs-toggle="tab" data-bs-target="#add" aria-label="Agregar gasto">
-        <i class="fas fa-plus" aria-hidden="true"></i>
+        <i class="fas fa-plus"></i>
     </button>
 
-    <div class="bottom-nav" role="navigation" aria-label="Navegación inferior">
-        <div class="nav-item active" role="button" tabindex="0" aria-pressed="true">
-            <i class="fas fa-home" aria-hidden="true"></i>
-            <span>Inicio</span>
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación inferior">
+        <div class="nav-item active" role="button" tabindex="0">
+            <i class="fas fa-home"></i><small>Inicio</small>
         </div>
         <div class="nav-item" role="button" tabindex="0">
-            <i class="fas fa-receipt" aria-hidden="true"></i>
-            <span>Gastos</span>
+            <i class="fas fa-receipt"></i><small>Gastos</small>
         </div>
         <div class="nav-item" role="button" tabindex="0">
-            <i class="fas fa-chart-bar" aria-hidden="true"></i>
-            <span>Reportes</span>
+            <i class="fas fa-chart-bar"></i><small>Reportes</small>
         </div>
         <div class="nav-item" role="button" tabindex="0">
-            <i class="fas fa-user-circle" aria-hidden="true"></i>
-            <span>Perfil</span>
+            <i class="fas fa-user-circle"></i><small>Perfil</small>
         </div>
-    </div>
+    </nav>
 
+    <!-- Mantengo exactamente los mismos imports y firebase config como pediste -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -426,289 +459,156 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const categoryNames = {
-            "gasolina": "Gasolina",
-            "hotel": "Hotel",
-            "comida": "Comida",
-            "bebida": "Bebida"
-        };
-
-        const categoryColors = {
-            "gasolina": "#3498db",
-            "hotel": "#9b59b6",
-            "comida": "#2ecc71",
-            "bebida": "#e67e22"
-        };
+        const categoryNames = { gasolina: "Gasolina", hotel: "Hotel", comida: "Comida", bebida: "Bebida" };
+        const categoryColors = { gasolina: "#3498db", hotel: "#9b59b6", comida: "#2ecc71", bebida: "#e67e22" };
 
         function formatDate(date) {
             try {
-                if (!(date instanceof Date)) {
-                    date = new Date(date);
-                }
+                if (!(date instanceof Date)) date = new Date(date);
                 if (isNaN(date)) return '';
-                // Uso de 'es-CO' para formato local (Bucaramanga, Colombia)
-                const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                return date.toLocaleDateString('es-CO', options);
-            } catch (e) {
-                return '';
-            }
+                return date.toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' });
+            } catch (e) { return ''; }
         }
+        function formatCurrency(amount) { const n = Number(amount) || 0; return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`; }
 
-        function formatCurrency(amount) {
-            const n = Number(amount) || 0;
-            return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`;
-        }
+        function debounce(fn, wait=300){ let t; return function(...a){ clearTimeout(t); t = setTimeout(()=> fn.apply(this,a), wait); }; }
 
-        // Debounce helper para evitar llamadas excesivas a Firestore
-        function debounce(fn, wait = 300){
-            let t;
-            return function(...args){
-                clearTimeout(t);
-                t = setTimeout(() => fn.apply(this, args), wait);
-            };
-        }
-
-        // Carga gastos con manejo de filtros
         async function loadExpenses() {
             const expenseList = document.getElementById('expense-list');
-            expenseList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando gastos...</p></div>';
+            expenseList.innerHTML = '<div class="loading"><div class="spinner" role="status"></div><p>Cargando gastos...</p></div>';
 
             try {
                 const categoryFilter = document.getElementById('filter-category').value;
                 const dateFilter = document.getElementById('filter-date').value;
 
                 let baseCol = collection(db, "travel_expenses");
-                let q = baseCol;
+                let constraints = [];
 
-                const constraints = [];
-
-                if (categoryFilter) {
-                    constraints.push(where("category", "==", categoryFilter));
-                }
-
+                if (categoryFilter) constraints.push(where("category","==", categoryFilter));
                 if (dateFilter) {
                     const [year, month] = dateFilter.split('-');
-                    const startDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1));
-                    const endDate = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
-                    constraints.push(where("date", ">=", startDate));
-                    constraints.push(where("date", "<", endDate));
+                    const start = new Date(Date.UTC(parseInt(year), parseInt(month)-1, 1));
+                    const end = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
+                    constraints.push(where("date", ">=", start));
+                    constraints.push(where("date", "<", end));
                 }
 
-                // aplicamos orderBy sobre date (desc)
-                // build query progressively to keep readability
-                if (constraints.length > 0) {
-                    q = query(baseCol, ...constraints, orderBy("date", "desc"));
-                } else {
-                    q = query(baseCol, orderBy("date", "desc"));
-                }
+                let q = constraints.length ? query(baseCol, ...constraints, orderBy("date","desc")) : query(baseCol, orderBy("date","desc"));
+                const snap = await getDocs(q);
 
-                const querySnapshot = await getDocs(q);
-                let totalAmount = 0;
-                const categoryTotals = { gasolina: 0, hotel: 0, comida: 0, bebida: 0 };
+                let total = 0;
+                const totals = { gasolina:0, hotel:0, comida:0, bebida:0 };
 
                 expenseList.innerHTML = '';
-
-                if (querySnapshot.empty) {
-                    expenseList.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-receipt"></i>
-                            <p>No hay gastos registrados</p>
-                            <p class="text-muted">Comienza agregando tu primer gasto</p>
-                        </div>
-                    `;
-                    updateStats(0, categoryTotals);
+                if (snap.empty) {
+                    expenseList.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>No hay gastos registrados</p><p class="text-muted">Comienza agregando tu primer gasto</p></div>`;
+                    updateStats(0, totals);
                     return;
                 }
 
-                // Render results
-                querySnapshot.forEach((docSnap) => {
-                    const expense = { id: docSnap.id, ...docSnap.data() };
+                snap.forEach(docSnap => {
+                    const e = { id: docSnap.id, ...docSnap.data() };
+                    const amt = Number(e.amount) || 0;
+                    total += amt;
+                    if (totals.hasOwnProperty(e.category)) totals[e.category] += amt;
 
-                    const amt = Number(expense.amount) || 0;
-                    totalAmount += amt;
-
-                    if (categoryTotals.hasOwnProperty(expense.category)) {
-                        categoryTotals[expense.category] += amt;
-                    }
-
-                    const expenseElement = document.createElement('div');
-                    expenseElement.className = `expense-item ${expense.category || ''}`;
-
-                    const displayDate = expense.date && expense.date.toDate ? expense.date.toDate() : new Date(expense.date);
-
-                    expenseElement.innerHTML = `
-                        <div class="expense-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    const el = document.createElement('div');
+                    el.className = `expense-item ${e.category||''}`;
+                    const displayDate = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
+                    el.innerHTML = `
+                        <div class="expense-header">
                             <div class="expense-date">${formatDate(displayDate)}</div>
                             <div class="expense-amount">${formatCurrency(amt)}</div>
                         </div>
-                        <div class="expense-category ${expense.category}-category">${categoryNames[expense.category] || 'Otra'}</div>
-                        <div class="expense-description">${expense.description || 'Sin descripción'}</div>
+                        <div class="expense-category ${e.category}-category">${categoryNames[e.category] || 'Otra'}</div>
+                        <div class="expense-description">${e.description || 'Sin descripción'}</div>
                         <div class="expense-footer">
-                            <div>${expense.paymentMethod || 'No especificado'}</div>
+                            <div>${e.paymentMethod || 'No especificado'}</div>
                             <div class="action-buttons">
-                                <button class="action-btn delete" data-id="${expense.id}" aria-label="Eliminar gasto ${formatCurrency(amt)}">
-                                    <i class="fas fa-trash" aria-hidden="true"></i>
-                                </button>
+                                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     `;
-                    expenseList.appendChild(expenseElement);
+                    expenseList.appendChild(el);
                 });
 
-                updateStats(totalAmount, categoryTotals);
+                updateStats(total, totals);
 
-                // Delegación de eventos: mejor rendimiento que añadir listeners por cada botón
-                expenseList.querySelectorAll('.action-btn.delete').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        deleteExpense(id);
-                    });
+                expenseList.querySelectorAll('.action-btn.delete').forEach(btn => {
+                    btn.addEventListener('click', function(){ deleteExpense(this.getAttribute('data-id')); });
                 });
 
             } catch (error) {
-                console.error("Error al cargar gastos:", error);
-                // Si Firestore solicita índice, documentar al usuario
-                const msg = (error && error.message && /index/i.test(error.message)) ? 
-                    'Consulta requiere un índice en Firestore. Revisa la consola de Firebase para crear el índice.' :
-                    'Error al conectar con la base de datos. Por favor intenta nuevamente.';
-                expenseList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle text-danger"></i>
-                        <p>${msg}</p>
-                        <p class="text-muted">Si el problema persiste, revisa reglas/índices en Firebase.</p>
-                    </div>
-                `;
+                console.error("Error cargar gastos:", error);
+                document.getElementById('expense-list').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-danger"></i><p>Error al cargar los gastos</p><p class="text-muted">Revisa consola y reglas/índices de Firestore.</p></div>`;
             }
         }
 
-        function updateStats(totalAmount, categoryTotals) {
+        function updateStats(totalAmount, totals) {
             document.getElementById('total-amount').textContent = formatCurrency(totalAmount);
-            document.getElementById('gasolina-amount').textContent = formatCurrency(categoryTotals.gasolina);
-            document.getElementById('hotel-amount').textContent = formatCurrency(categoryTotals.hotel);
-            document.getElementById('comida-amount').textContent = formatCurrency(categoryTotals.comida);
-            document.getElementById('bebida-amount').textContent = formatCurrency(categoryTotals.bebida);
-
-            updateReportChart(totalAmount, categoryTotals);
+            document.getElementById('gasolina-amount').textContent = formatCurrency(totals.gasolina);
+            document.getElementById('hotel-amount').textContent = formatCurrency(totals.hotel);
+            document.getElementById('comida-amount').textContent = formatCurrency(totals.comida);
+            document.getElementById('bebida-amount').textContent = formatCurrency(totals.bebida);
+            updateReportChart(totalAmount, totals);
         }
 
-        function updateReportChart(totalAmount, categoryTotals) {
-            const categories = ['gasolina', 'hotel', 'comida', 'bebida'];
-
+        function updateReportChart(totalAmount, totals) {
             const ctx = document.getElementById('expenses-chart');
             if (!ctx) return;
+            if (window.expensesChart) window.expensesChart.destroy();
 
-            if (window.expensesChart) {
-                window.expensesChart.destroy();
-            }
-
-            // Forzar maintainAspectRatio:false para control manual del alto en móviles
             window.expensesChart = new Chart(ctx.getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Gasolina', 'Hotel', 'Comida', 'Bebida'],
+                    labels: ['Gasolina','Hotel','Comida','Bebida'],
                     datasets: [{
-                        data: [
-                            categoryTotals.gasolina,
-                            categoryTotals.hotel,
-                            categoryTotals.comida,
-                            categoryTotals.bebida
-                        ],
-                        backgroundColor: [
-                            categoryColors.gasolina,
-                            categoryColors.hotel,
-                            categoryColors.comida,
-                            categoryColors.bebida
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#fff'
+                        data: [totals.gasolina, totals.hotel, totals.comida, totals.bebida],
+                        backgroundColor: [categoryColors.gasolina, categoryColors.hotel, categoryColors.comida, categoryColors.bebida],
+                        borderWidth: 2, borderColor: '#fff'
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom',
-                            labels: {
-                                padding: 12,
-                                font: {
-                                    size: 12,
-                                    weight: '600'
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + formatCurrency(context.parsed);
-                                }
-                            }
-                        }
-                    }
-                }
+                options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${formatCurrency(ctx.parsed)}` } } } }
             });
 
-            // Actualizar porcentajes de reporte
             const total = totalAmount || 0;
-            document.getElementById('report-gasolina').textContent = `${ total > 0 ? Math.round((categoryTotals.gasolina/total)*100) : 0 }%`;
-            document.getElementById('report-hotel').textContent = `${ total > 0 ? Math.round((categoryTotals.hotel/total)*100) : 0 }%`;
-            document.getElementById('report-comida').textContent = `${ total > 0 ? Math.round((categoryTotals.comida/total)*100) : 0 }%`;
-            document.getElementById('report-bebida').textContent = `${ total > 0 ? Math.round((categoryTotals.bebida/total)*100) : 0 }%`;
+            document.getElementById('report-gasolina').textContent = `${ total ? Math.round((totals.gasolina/total)*100) : 0 }%`;
+            document.getElementById('report-hotel').textContent = `${ total ? Math.round((totals.hotel/total)*100) : 0 }%`;
+            document.getElementById('report-comida').textContent = `${ total ? Math.round((totals.comida/total)*100) : 0 }%`;
+            document.getElementById('report-bebida').textContent = `${ total ? Math.round((totals.bebida/total)*100) : 0 }%`;
         }
 
         async function addExpense(expenseData) {
             try {
-                const [year, month, day] = expenseData.date.split('-');
-                const dateUTC = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
-
-                const docRef = await addDoc(collection(db, "travel_expenses"), {
-                    ...expenseData,
-                    date: dateUTC,
-                    createdAt: new Date()
-                });
-
-                console.log("Gasto registrado con ID:", docRef.id);
+                const [y,m,d] = expenseData.date.split('-');
+                const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
+                await addDoc(collection(db, "travel_expenses"), { ...expenseData, date: dateUTC, createdAt: new Date() });
                 return true;
-            } catch (error) {
-                console.error("Error al registrar gasto:", error);
-                return false;
-            }
+            } catch (e) { console.error(e); return false; }
         }
 
         async function deleteExpense(id) {
-            if (confirm('¿Estás seguro de eliminar este gasto?')) {
-                try {
-                    await deleteDoc(doc(db, "travel_expenses", id));
-                    console.log("Gasto eliminado");
-                    // recargar lista
-                    debouncedLoadExpenses();
-                } catch (error) {
-                    console.error("Error al eliminar gasto:", error);
-                    alert('Error al eliminar el gasto. Por favor, intenta nuevamente.');
-                }
-            }
+            if (!confirm('¿Estás seguro de eliminar este gasto?')) return;
+            try { await deleteDoc(doc(db, "travel_expenses", id)); debouncedLoad(); } catch (e) { alert('Error al eliminar.'); console.error(e); }
         }
 
-        // --- Inicialización DOM
-        document.addEventListener('DOMContentLoaded', function() {
+        const debouncedLoad = debounce(loadExpenses, 300);
+
+        document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             document.getElementById('expense-date').value = today.toISOString().split('T')[0];
             document.getElementById('filter-date').value = today.toISOString().slice(0,7);
 
-            // Debounced loader para filtros
-            window.debouncedLoadExpenses = debounce(loadExpenses, 300);
+            debouncedLoad();
 
-            loadExpenses();
-
-            document.getElementById('expense-form').addEventListener('submit', async function(e) {
+            document.getElementById('expense-form').addEventListener('submit', async function(e){
                 e.preventDefault();
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalHTML = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Guardando...';
-                submitBtn.disabled = true;
+                const btn = this.querySelector('button[type="submit"]');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Guardando...';
+                btn.disabled = true;
 
-                const expenseData = {
+                const data = {
                     date: document.getElementById('expense-date').value,
                     category: document.getElementById('expense-category').value,
                     description: document.getElementById('expense-description').value,
@@ -717,76 +617,42 @@
                     trip: document.getElementById('expense-trip').value || null
                 };
 
-                if (!expenseData.category) {
-                    alert('Por favor selecciona una categoría');
-                    submitBtn.innerHTML = originalHTML;
-                    submitBtn.disabled = false;
-                    return;
-                }
+                if (!data.category) { alert('Selecciona una categoría'); btn.innerHTML = original; btn.disabled=false; return; }
+                if (!data.amount || data.amount <= 0) { alert('Monto debe ser > 0'); btn.innerHTML = original; btn.disabled=false; return; }
 
-                if (!expenseData.amount || expenseData.amount <= 0) {
-                    alert('El monto debe ser mayor a cero');
-                    submitBtn.innerHTML = originalHTML;
-                    submitBtn.disabled = false;
-                    return;
-                }
-
-                const success = await addExpense(expenseData);
-
-                if (success) {
+                const ok = await addExpense(data);
+                if (ok) {
                     this.reset();
                     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
                     alert('✅ Gasto registrado exitosamente');
-
+                    // volver a "Gastos"
                     const expensesTabBtn = document.querySelector('[data-bs-target="#expenses"]');
-                    const tab = new bootstrap.Tab(expensesTabBtn);
-                    tab.show();
+                    new bootstrap.Tab(expensesTabBtn).show();
+                    debouncedLoad();
+                } else alert('❌ Error al registrar gasto.');
 
-                    // recargar (debounced por si viene de muchos cambios)
-                    debouncedLoadExpenses();
-                } else {
-                    alert('❌ Error al registrar el gasto. Por favor, intenta nuevamente.');
-                }
-
-                submitBtn.innerHTML = originalHTML;
-                submitBtn.disabled = false;
+                btn.innerHTML = original; btn.disabled = false;
             });
 
-            // filtros
-            document.getElementById('filter-category').addEventListener('change', debouncedLoadExpenses);
-            document.getElementById('filter-date').addEventListener('change', debouncedLoadExpenses);
+            document.getElementById('filter-category').addEventListener('change', debouncedLoad);
+            document.getElementById('filter-date').addEventListener('change', debouncedLoad);
 
-            // FAB -> abre agregar
-            const fab = document.querySelector('.fab');
-            fab.addEventListener('click', function() {
-                const addTabBtn = document.querySelector('[data-bs-target="#add"]');
-                const tab = new bootstrap.Tab(addTabBtn);
-                tab.show();
+            // FAB -> abrir añadir
+            document.querySelector('.fab').addEventListener('click', () => {
+                const addBtn = document.querySelector('[data-bs-target="#add"]');
+                new bootstrap.Tab(addBtn).show();
             });
 
-            // cuando se muestra pestaña reportes forzamos resize del chart
-            const navTabs = document.querySelectorAll('#myTab button');
-            navTabs.forEach(tabBtn => {
-                tabBtn.addEventListener('shown.bs.tab', function() {
-                    const target = this.getAttribute('data-bs-target');
-                    if (target === '#reports') {
-                        setTimeout(() => {
-                            if (window.expensesChart) {
-                                window.expensesChart.resize();
-                            }
-                        }, 120);
+            // cuando se muestra reportes, forzar resize del chart
+            document.querySelectorAll('#myTab button').forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function(){
+                    if (this.getAttribute('data-bs-target') === '#reports') {
+                        setTimeout(()=> { if (window.expensesChart) window.expensesChart.resize(); }, 120);
                     }
                 });
             });
 
-            // resize listener (throttled básico)
-            let resizeTimer;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
-                    if (window.expensesChart) window.expensesChart.resize();
-                }, 150);
-            });
+            window.addEventListener('resize', debounce(()=>{ if (window.expensesChart) window.expensesChart.resize(); }, 150));
         });
     </script>
 </body>
