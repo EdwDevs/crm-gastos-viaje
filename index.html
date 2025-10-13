@@ -13,23 +13,10 @@
         }
         html { font-size: clamp(14px, 2.2vw, 16px); }
         *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        body {
-            margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-            background: linear-gradient(135deg,#f5f7fa 0%, #e8ecf1 100%);
-            padding-bottom: calc(72px + env(safe-area-inset-bottom, 12px));
-        }
-        .app-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color:white; padding: calc(12px + env(safe-area-inset-top,6px)) 16px;
-            position: sticky; top:0; z-index:1200; display:flex; align-items:center; justify-content:space-between;
-            gap:12px; box-shadow: 0 6px 20px rgba(30,58,95,0.08);
-        }
+        body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background: linear-gradient(135deg,#f5f7fa 0%, #e8ecf1 100%); padding-bottom: calc(72px + env(safe-area-inset-bottom, 12px)); }
+        .app-header { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color:white; padding: calc(12px + env(safe-area-inset-top,6px)) 16px; position: sticky; top:0; z-index:1200; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow: 0 6px 20px rgba(30,58,95,0.08); }
         .app-header h1 { font-size:1.05rem; margin:0; display:flex; gap:.6rem; align-items:center; font-weight:700; }
-        .header-total {
-            background: rgba(255,255,255,0.14); padding:6px 10px; border-radius:999px; font-weight:700;
-            display:flex; align-items:center; gap:8px; font-size:0.95rem;
-            backdrop-filter: blur(4px);
-        }
+        .header-total { background: rgba(255,255,255,0.14); padding:6px 10px; border-radius:999px; font-weight:700; display:flex; align-items:center; gap:8px; font-size:0.95rem; backdrop-filter: blur(4px); }
         .container-main{ padding:14px; }
         .stats-card{ background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.6)); border-radius:10px; padding:12px; box-shadow:0 8px 20px rgba(12,18,28,0.04); display:flex; justify-content:space-between; gap:12px; align-items:center; }
         .stats-card .amount{ font-weight:800; font-size:1.5rem; background:linear-gradient(90deg,var(--success), #1e8f55); -webkit-background-clip:text; color:transparent; }
@@ -56,24 +43,21 @@
 <body>
     <header class="app-header" role="banner">
         <h1><i class="fas fa-plane-departure" aria-hidden="true"></i> Gastos de Viaje</h1>
-        <!-- NUEVO: badge con total global -->
-        <div class="header-total" aria-live="polite" title="Total gastado">
+        <div class="header-total" aria-live="polite" title="Total del viaje seleccionado">
             <i class="fas fa-wallet" style="opacity:.9"></i>
-            <div style="font-size:0.88rem; color: #fff;">Total:</div>
-            <div id="grand-total-badge" style="font-weight:900; color:#fff;">$0</div>
+            <div style="font-size:0.88rem; color:#fff;">Total (viaje):</div>
+            <div id="trip-total-badge" style="font-weight:900; color:#fff;">$0</div>
         </div>
     </header>
 
     <main class="container-main" role="main">
         <section class="stats-card" aria-live="polite">
             <div>
-                <div class="label">Total Gastado</div>
+                <div class="label">Total Gastado (vista)</div>
                 <div class="amount" id="total-amount">$0</div>
-                <div class="small-muted">Período actual</div>
+                <div class="small-muted">Período / Filtros aplicados</div>
             </div>
-            <div style="min-width:120px; text-align:right;">
-                <!-- espacio para icono / resumen -->
-            </div>
+            <div style="min-width:120px; text-align:right;"></div>
         </section>
 
         <section class="category-stats" aria-hidden="false">
@@ -84,25 +68,18 @@
         </section>
 
         <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab"><i class="fas fa-list"></i> Gastos</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab"><i class="fas fa-plus-circle"></i> Agregar</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab"><i class="fas fa-chart-pie"></i> Reportes</button>
-            </li>
+            <li class="nav-item" role="presentation"><button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab"><i class="fas fa-list"></i> Gastos</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab"><i class="fas fa-plus-circle"></i> Agregar</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab"><i class="fas fa-chart-pie"></i> Reportes</button></li>
         </ul>
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="expenses" role="tabpanel">
                 <div class="form-card">
                     <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <i class="fas fa-filter"></i><strong>Filtros</strong>
-                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;"><i class="fas fa-filter"></i><strong>Filtros</strong></div>
                     </div>
+
                     <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
                         <div style="flex:1; min-width:140px;">
                             <label class="form-label">Categoría</label>
@@ -111,6 +88,10 @@
                         <div style="flex:1; min-width:140px;">
                             <label class="form-label">Período</label>
                             <input type="month" class="form-control" id="filter-date">
+                        </div>
+                        <div style="flex:1; min-width:140px;">
+                            <label class="form-label">Viaje</label>
+                            <select class="form-select" id="filter-trip"><option value="">Todas</option><option value="__NO_TRIP__">(Sin viaje)</option></select>
                         </div>
                     </div>
                 </div>
@@ -124,56 +105,23 @@
                 <div class="form-card">
                     <h3><i class="fas fa-plus-circle"></i> Registrar Gasto</h3>
                     <form id="expense-form" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label">Fecha</label>
-                            <input type="date" class="form-control" id="expense-date" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Categoría</label>
-                            <select class="form-select" id="expense-category" required>
-                                <option value="">Seleccionar categoría</option>
-                                <option value="gasolina">🚗 Gasolina</option>
-                                <option value="hotel">🏨 Hotel</option>
-                                <option value="comida">🍽️ Comida</option>
-                                <option value="bebida">🥤 Bebida</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Descripción</label>
-                            <input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required>
-                        </div>
-
+                        <div class="mb-3"><label class="form-label">Fecha</label><input type="date" class="form-control" id="expense-date" required></div>
+                        <div class="mb-3"><label class="form-label">Categoría</label><select class="form-select" id="expense-category" required><option value="">Seleccionar categoría</option><option value="gasolina">🚗 Gasolina</option><option value="hotel">🏨 Hotel</option><option value="comida">🍽️ Comida</option><option value="bebida">🥤 Bebida</option></select></div>
+                        <div class="mb-3"><label class="form-label">Descripción</label><input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required></div>
                         <div class="mb-3">
                             <label class="form-label">Monto</label>
                             <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required>
-                            <!-- NUEVO: indicadores de totales en el formulario -->
                             <div class="small-muted" style="display:flex; gap:8px; justify-content:space-between; margin-top:8px;">
-                                <div>Total actual:</div>
+                                <div>Total actual (viaje):</div>
                                 <div id="current-total-form" style="font-weight:800;">$0</div>
                             </div>
                             <div class="small-muted" style="display:flex; gap:8px; justify-content:space-between;">
-                                <div>Total si guardas:</div>
+                                <div>Total si guardas (viaje):</div>
                                 <div id="projected-total-form" style="font-weight:900;">$0</div>
                             </div>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Método de Pago</label>
-                            <select class="form-select" id="expense-payment-method">
-                                <option value="Efectivo">💵 Efectivo</option>
-                                <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
-                                <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
-                                <option value="Transferencia">📱 Transferencia</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Viaje (Opcional)</label>
-                            <input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje">
-                        </div>
-
+                        <div class="mb-3"><label class="form-label">Método de Pago</label><select class="form-select" id="expense-payment-method"><option value="Efectivo">💵 Efectivo</option><option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option><option value="Tarjeta de Débito">💳 Tarjeta de Débito</option><option value="Transferencia">📱 Transferencia</option></select></div>
+                        <div class="mb-3"><label class="form-label">Viaje (Opcional)</label><input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje"></div>
                         <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle me-2"></i> Guardar Gasto</button>
                     </form>
                 </div>
@@ -182,9 +130,7 @@
             <div class="tab-pane fade" id="reports" role="tabpanel">
                 <div class="form-card">
                     <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
-                    <div style="width:100%; height:240px; margin:12px 0;">
-                        <canvas id="expenses-chart" style="width:100%; height:100%;"></canvas>
-                    </div>
+                    <div style="width:100%; height:240px; margin:12px 0;"><canvas id="expenses-chart" style="width:100%; height:100%;"></canvas></div>
                     <div class="category-stats" style="margin:0;">
                         <div class="category-stat gasolina-stat"><div class="label">Gasolina</div><div class="amount" id="report-gasolina">0%</div></div>
                         <div class="category-stat hotel-stat"><div class="label">Hotel</div><div class="amount" id="report-hotel">0%</div></div>
@@ -207,6 +153,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -227,47 +174,70 @@
         const categoryColors = { gasolina: "#3498db", hotel: "#9b59b6", comida: "#2ecc71", bebida: "#e67e22" };
 
         function formatDate(date) {
+            try { if (!(date instanceof Date)) date = new Date(date); if (isNaN(date)) return ''; return date.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' }); }
+            catch { return ''; }
+        }
+        function formatCurrency(amount) { const n = Number(amount) || 0; return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`; }
+
+        function debounce(fn, wait = 300){ let t; return function(...args){ clearTimeout(t); t = setTimeout(()=> fn.apply(this,args), wait); }; }
+
+        // CACHE simple de totales por viaje para evitar múltiples getDocs repetidos
+        const tripTotals = {}; // key -> number
+
+        // Helper: recoge lista de trips únicos desde la colección (excluye null/''), y rellena select #filter-trip.
+        async function fetchTripsAndPopulate() {
             try {
-                if (!(date instanceof Date)) date = new Date(date);
-                if (isNaN(date)) return '';
-                return date.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
-            } catch { return ''; }
-        }
-        function formatCurrency(amount) {
-            const n = Number(amount) || 0;
-            return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`;
-        }
-
-        function debounce(fn, wait = 300) {
-            let t;
-            return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait); };
-        }
-
-        // variable global para el total absoluto (todos los registros)
-        window.grandTotal = 0;
-
-        // Calcula el total global (suma de todos los documentos) y actualiza badge + formulario
-        async function computeGrandTotal() {
-            try {
-                const snap = await getDocs(collection(db, "travel_expenses"));
-                let total = 0;
-                snap.forEach(s => {
-                    const data = s.data();
-                    total += Number(data.amount) || 0;
+                const qSnap = await getDocs(collection(db, "travel_expenses"));
+                const tripsSet = new Set();
+                qSnap.forEach(d => {
+                    const t = d.data().trip;
+                    if (t && String(t).trim() !== '') tripsSet.add(String(t));
                 });
-                window.grandTotal = total;
-                document.getElementById('grand-total-badge').textContent = formatCurrency(total);
-                // actualizar también indicadores del formulario
-                const currentTotalEl = document.getElementById('current-total-form');
-                if (currentTotalEl) currentTotalEl.textContent = formatCurrency(total);
-                // actualizar proyección si hay monto ingresado
-                updateProjectedTotalFromInput();
-            } catch (error) {
-                console.error("Error calculando total global:", error);
+                const select = document.getElementById('filter-trip');
+                // Limpia excepto opciones base (Todas y Sin viaje)
+                select.querySelectorAll('option:not([value=""]):not([value="__NO_TRIP__"])').forEach(o => o.remove());
+                // Insertar trips ordenados
+                Array.from(tripsSet).sort().forEach(trip => {
+                    const opt = document.createElement('option');
+                    opt.value = trip;
+                    opt.textContent = trip;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("Error trayendo trips:", e);
             }
         }
 
-        // Carga gastos (filtrados) y actualiza stats (igual que antes)
+        // Calcula total para un tripKey:
+        // - tripKey === "" => total de todos
+        // - "__NO_TRIP__" => trip == null
+        // - otherwise => trip == tripKey
+        async function computeTotalForTrip(tripKey) {
+            // Si está en cache, devolver rápido
+            if (tripTotals.hasOwnProperty(tripKey)) return tripTotals[tripKey];
+
+            try {
+                let q;
+                const base = collection(db, "travel_expenses");
+                if (tripKey === "") {
+                    q = query(base);
+                } else if (tripKey === "__NO_TRIP__") {
+                    q = query(base, where("trip", "==", null));
+                } else {
+                    q = query(base, where("trip", "==", tripKey));
+                }
+                const snap = await getDocs(q);
+                let total = 0;
+                snap.forEach(s => { total += Number(s.data().amount) || 0; });
+                tripTotals[tripKey] = total;
+                return total;
+            } catch (e) {
+                console.error("Error calculando total por viaje:", e);
+                return 0;
+            }
+        }
+
+        // Carga gastos aplicando filtros: category, date, trip
         async function loadExpenses() {
             const expenseList = document.getElementById('expense-list');
             expenseList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando gastos...</p></div>';
@@ -275,73 +245,80 @@
             try {
                 const categoryFilter = document.getElementById('filter-category').value;
                 const dateFilter = document.getElementById('filter-date').value;
+                const tripFilter = document.getElementById('filter-trip').value; // "", "__NO_TRIP__", or trip string
 
-                let base = collection(db, "travel_expenses");
-                let constraints = [];
+                let baseCol = collection(db, "travel_expenses");
+                const constraints = [];
 
                 if (categoryFilter) constraints.push(where("category", "==", categoryFilter));
                 if (dateFilter) {
-                    const [y, m] = dateFilter.split('-');
-                    const start = new Date(Date.UTC(parseInt(y), parseInt(m) - 1, 1));
-                    const end = new Date(Date.UTC(parseInt(y), parseInt(m), 1));
+                    const [year, month] = dateFilter.split('-');
+                    const start = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1));
+                    const end = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
                     constraints.push(where("date", ">=", start));
                     constraints.push(where("date", "<", end));
                 }
+                if (tripFilter) {
+                    if (tripFilter === "__NO_TRIP__") constraints.push(where("trip", "==", null));
+                    else constraints.push(where("trip", "==", tripFilter));
+                }
 
-                let q = constraints.length ? query(base, ...constraints, orderBy("date", "desc")) : query(base, orderBy("date", "desc"));
+                const q = constraints.length ? query(baseCol, ...constraints, orderBy("date", "desc")) : query(baseCol, orderBy("date", "desc"));
                 const snap = await getDocs(q);
 
                 let totalAmount = 0;
-                const categoryTotals = { gasolina: 0, hotel: 0, comida: 0, bebida: 0 };
+                const catTotals = { gasolina: 0, hotel: 0, comida: 0, bebida: 0 };
 
                 expenseList.innerHTML = '';
 
                 if (snap.empty) {
                     expenseList.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>No hay gastos registrados</p><p class="text-muted">Comienza agregando tu primer gasto</p></div>`;
-                    updateStats(0, categoryTotals);
-                    // recalcular grand total también para mantener badge actualizada
-                    await computeGrandTotal();
+                    updateStats(0, catTotals);
+                    // actualizar badge del trip: si se ha seleccionado trip, mostrar su total (calcular)
+                    const tripTotal = await computeTotalForTrip(tripFilter || "");
+                    document.getElementById('trip-total-badge').textContent = formatCurrency(tripTotal);
                     return;
                 }
 
                 snap.forEach(docSnap => {
-                    const expense = { id: docSnap.id, ...docSnap.data() };
-                    const amt = Number(expense.amount) || 0;
+                    const e = { id: docSnap.id, ...docSnap.data() };
+                    const amt = Number(e.amount) || 0;
                     totalAmount += amt;
-                    if (categoryTotals.hasOwnProperty(expense.category)) categoryTotals[expense.category] += amt;
+                    if (catTotals.hasOwnProperty(e.category)) catTotals[e.category] += amt;
 
-                    const expenseElement = document.createElement('div');
-                    expenseElement.className = `expense-item ${expense.category || ''}`;
-                    const displayDate = expense.date && expense.date.toDate ? expense.date.toDate() : new Date(expense.date);
-                    expenseElement.innerHTML = `
+                    const el = document.createElement('div');
+                    el.className = `expense-item ${e.category || ''}`;
+                    const displayDate = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
+                    el.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div class="expense-date">${formatDate(displayDate)}</div>
                             <div class="expense-amount">${formatCurrency(amt)}</div>
                         </div>
-                        <div class="expense-category ${expense.category}-category" style="margin-top:8px; font-weight:700;">${categoryNames[expense.category] || 'Otra'}</div>
-                        <div class="expense-description" style="margin-top:8px; font-weight:600;">${expense.description || 'Sin descripción'}</div>
+                        <div class="expense-category ${e.category}-category" style="margin-top:8px; font-weight:700;">${categoryNames[e.category] || 'Otra'}</div>
+                        <div class="expense-description" style="margin-top:8px; font-weight:600;">${e.description || 'Sin descripción'}</div>
                         <div class="expense-footer">
-                            <div>${expense.paymentMethod || 'No especificado'}</div>
+                            <div>${e.paymentMethod || 'No especificado'}</div>
                             <div>
-                                <button class="action-btn delete" data-id="${expense.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
+                                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     `;
-                    expenseList.appendChild(expenseElement);
+                    expenseList.appendChild(el);
                 });
 
-                updateStats(totalAmount, categoryTotals);
+                updateStats(totalAmount, catTotals);
 
-                // listeners para eliminar
+                // listeners eliminar
                 expenseList.querySelectorAll('.action-btn.delete').forEach(btn => {
-                    btn.addEventListener('click', () => {
+                    btn.addEventListener('click', async () => {
                         const id = btn.getAttribute('data-id');
-                        deleteExpense(id);
+                        await deleteExpense(id);
                     });
                 });
 
-                // actualizar badge global (recalcula todo, para estar seguros)
-                await computeGrandTotal();
+                // actualizar badge del trip seleccionado
+                const tripTotal = await computeTotalForTrip(document.getElementById('filter-trip').value || "");
+                document.getElementById('trip-total-badge').textContent = formatCurrency(tripTotal);
 
             } catch (error) {
                 console.error("Error al cargar gastos:", error);
@@ -387,6 +364,12 @@
                 const [y,m,d] = expenseData.date.split('-');
                 const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m) - 1, parseInt(d)));
                 await addDoc(collection(db, "travel_expenses"), { ...expenseData, date: dateUTC, createdAt: new Date() });
+                // invalidar cache para el trip correspondiente y para "Todas"
+                const tripKey = expenseData.trip && String(expenseData.trip).trim() !== '' ? String(expenseData.trip) : "__NO_TRIP__";
+                tripTotals[tripKey] = undefined;
+                tripTotals[""] = undefined;
+                // re-popular trips (en caso se haya creado un nuevo trip)
+                await fetchTripsAndPopulate();
                 return true;
             } catch (error) {
                 console.error("Error al registrar gasto:", error);
@@ -397,8 +380,16 @@
         async function deleteExpense(id) {
             if (!confirm('¿Estás seguro de eliminar este gasto?')) return;
             try {
-                await deleteDoc(doc(db, "travel_expenses", id));
-                // recargas y recalculamos
+                // Antes de delete: leer el documento para invalidar cache del trip específico
+                const docRef = doc(db, "travel_expenses", id);
+                // lectura ligera
+                const dSnap = await getDocs(query(collection(db, "travel_expenses"), where("__name__", "==", id)));
+                // eliminar
+                await deleteDoc(docRef);
+                // invalidar cache general; para simplicidad invalidamos todo (puedes optimizar)
+                for (const k in tripTotals) tripTotals[k] = undefined;
+                // recargar lista y trips
+                await fetchTripsAndPopulate();
                 await loadExpenses();
             } catch (error) {
                 console.error("Error al eliminar gasto:", error);
@@ -406,30 +397,41 @@
             }
         }
 
-        // Actualiza el "Total si guardas" tomando grandTotal + valor input
-        function updateProjectedTotalFromInput() {
-            const current = Number(window.grandTotal) || 0;
-            const amtInput = document.getElementById('expense-amount');
-            let val = Number(amtInput && amtInput.value ? amtInput.value : 0) || 0;
-            const projected = current + val;
-            const projectedEl = document.getElementById('projected-total-form');
-            const currentEl = document.getElementById('current-total-form');
-            if (currentEl) currentEl.textContent = formatCurrency(current);
-            if (projectedEl) projectedEl.textContent = formatCurrency(projected);
+        // Cuando en el formulario se escribe un trip, calculamos el total para ese trip (debounced)
+        const debouncedComputeTripTotalForForm = debounce(async function(tripText) {
+            let tripKey = tripText && tripText.trim() !== '' ? tripText.trim() : "";
+            // si user dejó campo vacío => mostrar total de "Todas"
+            const total = await computeTotalForTrip(tripKey === "" ? "" : tripKey);
+            document.getElementById('current-total-form').textContent = formatCurrency(total);
+            // actualizar proyectado en base al monto ingresado
+            const amount = Number(document.getElementById('expense-amount').value) || 0;
+            document.getElementById('projected-total-form').textContent = formatCurrency(total + amount);
+        }, 350);
+
+        // Si el monto cambia, actualizamos proyección (usa cache si existe)
+        function updateProjectedFromAmountInput() {
+            const amount = Number(document.getElementById('expense-amount').value) || 0;
+            const tripText = document.getElementById('expense-trip').value;
+            const tripKey = tripText && tripText.trim() !== '' ? tripText.trim() : "";
+            const current = tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey] === 'number' ? tripTotals[tripKey] : 0;
+            document.getElementById('projected-total-form').textContent = formatCurrency(current + amount);
         }
 
-        const debouncedLoadExpenses = debounce(loadExpenses, 300);
+        const debouncedLoad = debounce(loadExpenses, 300);
 
         document.addEventListener('DOMContentLoaded', async function() {
+            // fecha por defecto
             const today = new Date();
             document.getElementById('expense-date').value = today.toISOString().split('T')[0];
             document.getElementById('filter-date').value = today.toISOString().slice(0,7);
 
-            // Inicializar: calculamos grand total y cargamos lista
-            await computeGrandTotal();
+            // poblar trips en filtro
+            await fetchTripsAndPopulate();
+
+            // carga inicial
             await loadExpenses();
 
-            // Form submit
+            // submit form
             document.getElementById('expense-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const submitBtn = this.querySelector('button[type="submit"]');
@@ -443,7 +445,7 @@
                     description: document.getElementById('expense-description').value,
                     amount: parseFloat(document.getElementById('expense-amount').value),
                     paymentMethod: document.getElementById('expense-payment-method').value,
-                    trip: document.getElementById('expense-trip').value || null
+                    trip: (document.getElementById('expense-trip').value || null)
                 };
 
                 if (!expenseData.category) { alert('Por favor selecciona una categoría'); submitBtn.innerHTML = originalHTML; submitBtn.disabled = false; return; }
@@ -454,12 +456,13 @@
                     this.reset();
                     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
                     alert('✅ Gasto registrado exitosamente');
-                    // Mostrar pestaña Gastos
+                    // volver a Gastos
                     const expensesTab = document.querySelector('[data-bs-target="#expenses"]');
                     const tab = new bootstrap.Tab(expensesTab);
                     tab.show();
-                    // recargar datos y recalcular total global
-                    await computeGrandTotal();
+                    // recargar trips + lista y re-calcular cache
+                    await fetchTripsAndPopulate();
+                    for (const k in tripTotals) tripTotals[k] = undefined;
                     await loadExpenses();
                 } else {
                     alert('❌ Error al registrar el gasto. Por favor, intenta nuevamente.');
@@ -469,30 +472,41 @@
                 submitBtn.disabled = false;
             });
 
-            // Actualización dinámica del "Total si guardas" mientras teclean monto
-            const amountInput = document.getElementById('expense-amount');
-            amountInput.addEventListener('input', updateProjectedTotalFromInput);
+            // listeners filtros
+            document.getElementById('filter-category').addEventListener('change', debouncedLoad);
+            document.getElementById('filter-date').addEventListener('change', debouncedLoad);
+            document.getElementById('filter-trip').addEventListener('change', async function() {
+                // cuando cambiamos el trip en el filtro, actualizar badge inmediatamente (usa cache si existe)
+                const tripKey = this.value || "";
+                const total = await computeTotalForTrip(tripKey);
+                document.getElementById('trip-total-badge').textContent = formatCurrency(total);
+                // recargar lista
+                debouncedLoad();
+            });
 
-            // Cuando cambian filtros recargamos la lista (debounced)
-            document.getElementById('filter-category').addEventListener('change', debouncedLoadExpenses);
-            document.getElementById('filter-date').addEventListener('change', debouncedLoadExpenses);
+            // inputs del formulario: al escribir trip -> recalcule total para ese viaje; al escribir monto -> proyecte
+            document.getElementById('expense-trip').addEventListener('input', function() {
+                debouncedComputeTripTotalForForm(this.value);
+            });
+            document.getElementById('expense-amount').addEventListener('input', updateProjectedFromAmountInput);
 
-            // FAB open add tab
-            document.querySelector('.fab').addEventListener('click', function() {
-                const addTab = document.querySelector('[data-bs-target="#add"]');
-                const tab = new bootstrap.Tab(addTab);
-                tab.show();
+            // FAB -> abrir add
+            document.querySelector('.fab').addEventListener('click', () => {
+                const addTabBtn = document.querySelector('[data-bs-target="#add"]');
+                new bootstrap.Tab(addTabBtn).show();
             });
 
             // Forzar resize del chart cuando se muestra la pestaña Reportes
-            document.querySelectorAll('#myTab button').forEach(tab => {
-                tab.addEventListener('shown.bs.tab', function() {
-                    const target = this.getAttribute('data-bs-target');
-                    if (target === '#reports') {
+            document.querySelectorAll('#myTab button').forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function() {
+                    if (this.getAttribute('data-bs-target') === '#reports') {
                         setTimeout(() => { if (window.expensesChart) window.expensesChart.resize(); }, 120);
                     }
                 });
             });
+
+            // resize listener
+            window.addEventListener('resize', debounce(() => { if (window.expensesChart) window.expensesChart.resize(); }, 150));
         });
     </script>
 </body>
