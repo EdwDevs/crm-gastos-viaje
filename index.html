@@ -119,11 +119,7 @@
       padding:14px;
     }
     .stats-card .label{ color: var(--muted); font-weight:700; font-size:.9rem; }
-    .stats-card .amount{
-      font-weight:900; font-size:1.6rem;
-      background: linear-gradient(90deg, var(--success), #10b981);
-      -webkit-background-clip:text; color:transparent;
-    }
+    .stats-card .amount{ font-weight:900; font-size:1.6rem; background: linear-gradient(90deg, var(--success), #10b981); -webkit-background-clip:text; color:transparent; }
 
     /* ===== Filters (chips) ===== */
     .chips{ display:grid; grid-template-columns: 1fr; gap:10px; padding:12px; }
@@ -465,7 +461,10 @@
   <!-- App JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getFirestore, collection, addDoc, deleteDoc, doc, query, where, orderBy, getDocs,
+      onSnapshot, serverTimestamp, Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
@@ -510,12 +509,15 @@
 
     /* ===== Datos / Estado ===== */
     const categoryNames  = { gasolina:"Gasolina", hotel:"Hotel", comida:"Comida", bebida:"Bebida" };
-    const categoryColors = { gasolina:getComputedStyle(document.documentElement).getPropertyValue('--gasolina').trim() || "#60a5fa",
-                             hotel:getComputedStyle(document.documentElement).getPropertyValue('--hotel').trim() || "#a78bfa",
-                             comida:getComputedStyle(document.documentElement).getPropertyValue('--comida').trim() || "#34d399",
-                             bebida:getComputedStyle(document.documentElement).getPropertyValue('--bebida').trim() || "#f59e0b" };
+    const categoryColors = {
+      gasolina:getComputedStyle(document.documentElement).getPropertyValue('--gasolina').trim() || "#60a5fa",
+      hotel:getComputedStyle(document.documentElement).getPropertyValue('--hotel').trim() || "#a78bfa",
+      comida:getComputedStyle(document.documentElement).getPropertyValue('--comida').trim() || "#34d399",
+      bebida:getComputedStyle(document.documentElement).getPropertyValue('--bebida').trim() || "#f59e0b"
+    };
 
     const tripTotals = {}; // cache por viaje
+    let unsubscribeExpenses = null; // para onSnapshot actual
 
     /* ===== Trips ===== */
     async function fetchTripsAndPopulate(){
@@ -548,94 +550,7 @@
       }catch(e){ console.error("Total trip error:",e); return 0; }
     }
 
-    /* ===== Carga de gastos con filtros ===== */
-    async function loadExpenses(){
-      const list = $("#expense-list");
-      list.innerHTML = `
-        <div class="expense-item"><div class="skeleton" style="height:16px; width:40%;"></div><div class="skeleton" style="height:14px; width:20%; margin-top:10px;"></div><div class="skeleton" style="height:12px; width:70%; margin-top:10px;"></div></div>
-        <div class="expense-item"><div class="skeleton" style="height:16px; width:35%;"></div><div class="skeleton" style="height:14px; width:25%; margin-top:10px;"></div><div class="skeleton" style="height:12px; width:60%; margin-top:10px;"></div></div>
-      `;
-
-      try{
-        const category = $("#filter-category").value;
-        const monthVal = $("#filter-date").value;
-        const tripVal  = $("#filter-trip").value;
-
-        const base = collection(db,"travel_expenses");
-        const cs   = [];
-
-        if(category) cs.push(where("category","==",category));
-        if(monthVal){
-          const [y,m]=monthVal.split('-');
-          const start = new Date(Date.UTC(parseInt(y), parseInt(m)-1, 1));
-          const end   = new Date(Date.UTC(parseInt(y), parseInt(m),   1));
-          cs.push(where("date",">=",start)); cs.push(where("date","<",end));
-        }
-        if(tripVal){
-          if(tripVal==="__NO_TRIP__") cs.push(where("trip","==",null));
-          else cs.push(where("trip","==",tripVal));
-        }
-
-        const qy = cs.length ? query(base, ...cs, orderBy("date","desc")) : query(base, orderBy("date","desc"));
-        const snap = await getDocs(qy);
-
-        let total=0;
-        const tot = { gasolina:0, hotel:0, comida:0, bebida:0 };
-
-        list.innerHTML = "";
-        if(snap.empty){
-          list.innerHTML = `<div class="loading"><p>No hay gastos con estos filtros</p></div>`;
-          updateStats(0, tot);
-          const t = await computeTotalForTrip(tripVal || "");
-          $("#trip-total-badge").textContent = formatCurrency(t);
-          return;
-        }
-
-        snap.forEach(d=>{
-          const e = { id:d.id, ...d.data() };
-          const amt = Number(e.amount)||0; total += amt;
-          if(tot.hasOwnProperty(e.category)) tot[e.category] += amt;
-
-          const el = document.createElement('div');
-          el.className = `expense-item ${e.category||''}`;
-          const dd = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
-          el.innerHTML = `
-            <div class="expense-header">
-              <div class="expense-date">${formatDate(dd)}</div>
-              <div class="expense-amount">${formatCurrency(amt)}</div>
-            </div>
-            <div class="expense-category ${e.category}-category">${categoryNames[e.category]||'Otra'}</div>
-            <div class="expense-description">${e.description||'Sin descripción'}</div>
-            <div class="expense-footer">
-              <div>${e.paymentMethod||'No especificado'}</div>
-              <div>
-                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-          `;
-          list.appendChild(el);
-        });
-
-        updateStats(total, tot);
-
-        list.querySelectorAll(".action-btn.delete").forEach(btn=>{
-          btn.addEventListener("click", async ()=>{
-            const id = btn.getAttribute("data-id");
-            await deleteExpense(id);
-          });
-        });
-
-        const tripTotal = await computeTotalForTrip($("#filter-trip").value || "");
-        $("#trip-total-badge").textContent = formatCurrency(tripTotal);
-
-      }catch(e){
-        console.error("Load error:",e);
-        list.innerHTML = `<div class="loading"><p>Error al cargar. Reintenta.</p></div>`;
-        showToast("Error al cargar gastos", "danger");
-      }
-    }
-
-    /* ===== Stats + Chart ===== */
+    /* ===== Render & Stats ===== */
     function updateStats(totalAmount, catTotals){
       $("#total-amount").textContent   = formatCurrency(totalAmount);
       $("#gasolina-amount").textContent= formatCurrency(catTotals.gasolina);
@@ -675,20 +590,129 @@
       $("#report-bebida").textContent   = `${pct(catTotals.bebida)}%`;
     }
 
+    function renderSkeleton(){
+      const list = $("#expense-list");
+      list.innerHTML = `
+        <div class="expense-item"><div class="skeleton" style="height:16px; width:40%;"></div><div class="skeleton" style="height:14px; width:20%; margin-top:10px;"></div><div class="skeleton" style="height:12px; width:70%; margin-top:10px;"></div></div>
+        <div class="expense-item"><div class="skeleton" style="height:16px; width:35%;"></div><div class="skeleton" style="height:14px; width:25%; margin-top:10px;"></div><div class="skeleton" style="height:12px; width:60%; margin-top:10px;"></div></div>
+      `;
+    }
+
+    function wireDeleteButtons(){
+      document.querySelectorAll(".action-btn.delete").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-id");
+          await deleteExpense(id);
+        });
+      });
+    }
+
+    /* ===== Suscripción en tiempo real a gastos (según filtros) ===== */
+    function buildQueryFromFilters(){
+      const category = $("#filter-category").value;
+      const monthVal = $("#filter-date").value;
+      const tripVal  = $("#filter-trip").value;
+
+      const base = collection(db,"travel_expenses");
+      const cs   = [];
+
+      if(category) cs.push(where("category","==",category));
+      if(monthVal){
+        const [y,m]=monthVal.split('-');
+        const start = new Date(Date.UTC(parseInt(y), parseInt(m)-1, 1));
+        const end   = new Date(Date.UTC(parseInt(y), parseInt(m),   1));
+        cs.push(where("date",">=", Timestamp.fromDate(start)));
+        cs.push(where("date","<",  Timestamp.fromDate(end)));
+      }
+      if(tripVal){
+        if(tripVal==="__NO_TRIP__") cs.push(where("trip","==",null));
+        else cs.push(where("trip","==",tripVal));
+      }
+      // siempre ordenar por fecha desc
+      return cs.length ? query(base, ...cs, orderBy("date","desc")) : query(base, orderBy("date","desc"));
+    }
+
+    async function subscribeExpenses(){
+      if(unsubscribeExpenses){ unsubscribeExpenses(); unsubscribeExpenses = null; }
+      renderSkeleton();
+      const qy = buildQueryFromFilters();
+
+      unsubscribeExpenses = onSnapshot(qy, async (snap)=>{
+        const list = $("#expense-list");
+        if(snap.empty){
+          list.innerHTML = `<div class="loading"><p>No hay gastos con estos filtros</p></div>`;
+          updateStats(0, { gasolina:0, hotel:0, comida:0, bebida:0 });
+          const t = await computeTotalForTrip($("#filter-trip").value || "");
+          $("#trip-total-badge").textContent = formatCurrency(t);
+          return;
+        }
+
+        let total=0;
+        const tot = { gasolina:0, hotel:0, comida:0, bebida:0 };
+
+        list.innerHTML = "";
+        snap.forEach(d=>{
+          const e = { id:d.id, ...d.data() };
+          const amt = Number(e.amount)||0; total += amt;
+          if(tot.hasOwnProperty(e.category)) tot[e.category] += amt;
+
+          const el = document.createElement('div');
+          el.className = `expense-item ${e.category||''}`;
+          const dd = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
+          el.innerHTML = `
+            <div class="expense-header">
+              <div class="expense-date">${formatDate(dd)}</div>
+              <div class="expense-amount">${formatCurrency(amt)}</div>
+            </div>
+            <div class="expense-category ${e.category}-category">${categoryNames[e.category]||'Otra'}</div>
+            <div class="expense-description">${e.description||'Sin descripción'}</div>
+            <div class="expense-footer">
+              <div>${e.paymentMethod||'No especificado'}</div>
+              <div>
+                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+
+        updateStats(total, tot);
+        wireDeleteButtons();
+
+        const tripTotal = await computeTotalForTrip($("#filter-trip").value || "");
+        $("#trip-total-badge").textContent = formatCurrency(tripTotal);
+
+        // refrescar opciones de viaje (por si se agregó uno nuevo)
+        fetchTripsAndPopulate().catch(()=>{});
+      }, (error)=>{
+        console.error("Snapshot error:", error);
+        const list = $("#expense-list");
+        list.innerHTML = `<div class="loading"><p>Error al cargar. Reintenta.</p></div>`;
+        showToast("Error al cargar gastos", "danger");
+      });
+    }
+
     /* ===== CRUD ===== */
     async function addExpense(data){
       try{
         const [y,m,d] = data.date.split('-');
         const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
-        await addDoc(collection(db,"travel_expenses"), { ...data, date: dateUTC, createdAt: new Date() });
+        await addDoc(collection(db,"travel_expenses"), {
+          ...data,
+          date: Timestamp.fromDate(dateUTC),
+          createdAt: serverTimestamp()
+        });
 
-        // invalidar cache
+        // invalidar cache básica de totales
         const k = data.trip && String(data.trip).trim()!=='' ? String(data.trip) : "__NO_TRIP__";
         tripTotals[k] = undefined; tripTotals[""] = undefined;
 
-        await fetchTripsAndPopulate();
+        // No llamamos a load manual; onSnapshot hará el update de UI automáticamente
         return true;
-      }catch(e){ console.error("Add error:",e); return false; }
+      }catch(e){
+        console.error("Add error:",e);
+        return false;
+      }
     }
 
     async function deleteExpense(id){
@@ -696,8 +720,6 @@
       try{
         await deleteDoc(doc(db,"travel_expenses", id));
         for(const k in tripTotals) tripTotals[k] = undefined;
-        await fetchTripsAndPopulate();
-        await loadExpenses();
         showToast("Gasto eliminado", "primary");
       }catch(e){
         console.error("Delete error:",e);
@@ -723,7 +745,7 @@
     }
 
     /* ===== Eventos UI ===== */
-    const debouncedLoad = debounce(loadExpenses, 250);
+    const debouncedSubscribe = debounce(subscribeExpenses, 250);
 
     document.addEventListener("DOMContentLoaded", async ()=>{
       // defaults
@@ -732,7 +754,7 @@
       $("#filter-date").value  = today.toISOString().slice(0,7);
 
       await fetchTripsAndPopulate();
-      await loadExpenses();
+      await subscribeExpenses();
 
       // submit
       $("#expense-form").addEventListener("submit", async (e)=>{
@@ -742,41 +764,42 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Guardando...';
         btn.disabled = true;
 
-        const data = {
-          date: $("#expense-date").value,
-          category: $("#expense-category").value,
-          description: $("#expense-description").value,
-          amount: parseFloat($("#expense-amount").value),
-          paymentMethod: $("#expense-payment-method").value,
-          trip: ($("#expense-trip").value || null)
-        };
+        try{
+          const data = {
+            date: $("#expense-date").value,
+            category: $("#expense-category").value,
+            description: $("#expense-description").value,
+            amount: parseFloat($("#expense-amount").value),
+            paymentMethod: $("#expense-payment-method").value,
+            trip: ($("#expense-trip").value || null)
+          };
 
-        if(!data.category){ showToast('Selecciona una categoría', 'danger'); btn.innerHTML=orig; btn.disabled=false; return; }
-        if(!data.amount || data.amount<=0){ showToast('El monto debe ser mayor a cero', 'danger'); btn.innerHTML=orig; btn.disabled=false; return; }
+          if(!data.category){ showToast('Selecciona una categoría', 'danger'); return; }
+          if(!data.amount || data.amount<=0){ showToast('El monto debe ser mayor a cero', 'danger'); return; }
 
-        const ok = await addExpense(data);
-        if(ok){
-          e.currentTarget.reset();
-          $("#expense-date").value = new Date().toISOString().split('T')[0];
-          showToast('✅ Gasto registrado', 'primary');
-          new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
-          await fetchTripsAndPopulate();
-          for(const k in tripTotals) tripTotals[k]=undefined;
-          await loadExpenses();
-        }else{
-          showToast('❌ Error al registrar', 'danger');
+          const ok = await addExpense(data);
+          if(ok){
+            e.currentTarget.reset();
+            $("#expense-date").value = new Date().toISOString().split('T')[0];
+            showToast('✅ Gasto registrado', 'primary');
+            new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
+            // onSnapshot actualizará lista/totales/trips
+          }else{
+            showToast('❌ Error al registrar', 'danger');
+          }
+        } finally {
+          // Pase lo que pase, el botón vuelve a su estado normal
+          btn.innerHTML = orig; btn.disabled=false;
         }
-
-        btn.innerHTML = orig; btn.disabled=false;
       });
 
-      // filtros
-      $("#filter-category").addEventListener("change", debouncedLoad);
-      $("#filter-date").addEventListener("change", debouncedLoad);
+      // filtros -> re-suscribirse
+      $("#filter-category").addEventListener("change", debouncedSubscribe);
+      $("#filter-date").addEventListener("change", debouncedSubscribe);
       $("#filter-trip").addEventListener("change", async function(){
         const total = await computeTotalForTrip(this.value || "");
         $("#trip-total-badge").textContent = formatCurrency(total);
-        debouncedLoad();
+        debouncedSubscribe();
       });
 
       // formulario: totales por viaje en vivo
