@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>CRM Gastos Viaje - Tabla</title>
+  <title>CRM Gastos Viaje - Corrección UI</title>
 
   <!-- Bootstrap + Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
   <style>
-    /* ====== Diseño base con temas (restauradas variables) ====== */
+    /* ====== Diseño base con temas ====== */
     :root{
+      /* LIGHT */
       --bg: #f7f9fc;
       --bg-soft: #ffffff;
       --bg-glass: rgba(255,255,255,0.75);
@@ -19,7 +20,7 @@
       --text: #0f172a;
       --muted: #6b7280;
 
-      --primary: #2563eb;
+      --primary: #2563eb;  /* azul */
       --primary-2: #3b82f6;
       --success: #16a34a;
       --danger: #dc2626;
@@ -38,9 +39,10 @@
       --shadow-sm: 0 8px 20px rgba(2,6,23,0.06);
     }
 
+    /* DARK THEME */
     [data-theme="dark"]{
-      --bg: #0b1220;
-      --bg-soft: #0f172a;
+      --bg: #0b1220;         /* navy-900 */
+      --bg-soft: #0f172a;    /* slate-900 */
       --bg-glass: rgba(17,24,39,0.55);
       --stroke: rgba(148,163,184,0.16);
       --text: #e5e7eb;
@@ -52,8 +54,16 @@
       --gasolina:#60a5fa; --hotel:#a78bfa; --comida:#34d399; --bebida:#f59e0b;
     }
 
+    @media (prefers-color-scheme: dark){
+      :root{ color-scheme: dark; }
+    }
+
     html { font-size: clamp(14px, 2.2vw, 16px); }
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    @media (prefers-reduced-motion: reduce){
+      *{ animation: none !important; transition: none !important; }
+    }
+
     body{
       margin:0; min-height:100vh; color:var(--text);
       background: radial-gradient(1200px 800px at 100% -10%, var(--bg-soft) 0%, transparent 40%),
@@ -63,73 +73,193 @@
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
     }
 
-    /* Topbar */
-    .topbar{ position: sticky; top:0; z-index: 1000; padding: calc(10px + env(safe-area-inset-top, 6px)) 14px 10px; background: linear-gradient(180deg, var(--bg-glass), rgba(255,255,255,0.02)); backdrop-filter: blur(10px); border-bottom: 1px solid var(--stroke); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    /* ===== Top App Bar ===== */
+    .topbar{
+      position: sticky; top:0; z-index: 1000;
+      padding: calc(10px + env(safe-area-inset-top, 6px)) 14px 10px;
+      background: linear-gradient(180deg, var(--bg-glass), rgba(255,255,255,0.02));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--stroke);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
     .brand{ display:flex; align-items:center; gap:10px; }
     .brand i{ color: var(--primary); font-size: 1.15rem; }
     .brand h1{ margin:0; font-size:1rem; letter-spacing:.3px; font-weight:800; }
 
     .top-actions{ display:flex; gap:10px; align-items:center; }
-    .theme-toggle{ min-width:40px; min-height:40px; border-radius: 12px; background: var(--bg-glass); border:1px solid var(--stroke); color: var(--text); display:flex; align-items:center; justify-content:center; }
-    .badge-total{ display:flex; align-items:center; gap:10px; background: linear-gradient(180deg, rgba(59,130,246,0.18), rgba(59,130,246,0.1)); border:1px solid rgba(96,165,250,0.35); padding:8px 12px; border-radius: 999px; box-shadow: var(--shadow-sm); min-height: 38px; }
+    .theme-toggle{
+      min-width:40px; min-height:40px; border-radius: 12px;
+      background: var(--bg-glass); border:1px solid var(--stroke); color: var(--text);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .badge-total{
+      display:flex; align-items:center; gap:10px;
+      background: linear-gradient(180deg, rgba(59,130,246,0.18), rgba(59,130,246,0.1));
+      border:1px solid rgba(96,165,250,0.35);
+      padding:8px 12px; border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+      min-height: 38px;
+    }
+    .badge-total i{ color: var(--primary); }
     #trip-total-badge{ font-weight:900; }
 
+    /* ===== Containers / Cards ===== */
     .container-main{ padding: 14px; }
-    .glass{ background: var(--bg-glass); border:1px solid var(--stroke); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+    .glass{
+      background: var(--bg-glass);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
     .section{ margin-top:12px; }
 
-    /* Table styling */
-    .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling: touch; border-radius:12px; }
-    table.expenses-table{ width:100%; border-collapse:collapse; min-width:720px; }
-    table.expenses-table thead th{
-      text-align:left; padding:12px 10px; font-weight:800; color:var(--muted); font-size:.85rem; border-bottom:1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    /* ===== Stats ===== */
+    .stats-card{
+      display:flex; justify-content:space-between; align-items:center; gap:14px;
+      padding:14px;
     }
-    table.expenses-table tbody tr{ border-bottom:1px dashed rgba(255,255,255,0.03); }
-    table.expenses-table td{
-      padding:10px; vertical-align:middle; font-weight:700; color:var(--text);
-    }
-    .amount-cell{ font-weight:900; color:var(--success); text-align:right; white-space:nowrap; }
-
-    .cat-badge{ display:inline-block; padding:6px 8px; border-radius:999px; font-weight:800; font-size:.78rem; border:1px solid var(--stroke); background: rgba(255,255,255,0.04); }
-
-    /* Action buttons */
-    .action-btn{ min-width:40px; min-height:36px; border-radius:8px; border:1px solid var(--stroke); background: rgba(255,255,255,0.03); color:inherit; padding:8px; margin-left:6px; }
-    .action-btn .fas{ font-size:0.92rem; }
-
-    /* Responsive: transformar tabla en "cards" en pantallas pequeñas */
-    @media (max-width:720px){
-      table.expenses-table{ min-width:100%; display:block; }
-      table.expenses-table thead{ display:none; }
-      table.expenses-table tbody{ display:block; }
-      table.expenses-table tbody tr{ display:block; margin-bottom:12px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:12px; padding:10px; }
-      table.expenses-table tbody td{ display:flex; justify-content:space-between; padding:8px 10px; }
-      table.expenses-table tbody td::before{
-        content: attr(data-label);
-        color: var(--muted);
-        font-weight:800;
-        margin-right:8px;
-        flex:0 0 45%;
-        text-align:left;
-      }
-      .amount-cell{ text-align:right; }
-      .actions-cell{ display:flex; justify-content:flex-end; gap:8px; }
+    .stats-card .label{ color: var(--muted); font-weight:700; font-size:.9rem; }
+    .stats-card .amount{
+      font-weight:900; font-size:1.6rem;
+      background: linear-gradient(90deg, var(--success), #10b981);
+      -webkit-background-clip:text; color:transparent;
     }
 
-    /* Skeleton / loading */
-    .skeleton{ position:relative; overflow:hidden; background: rgba(148,163,184,0.12); border-radius:12px; height:64px; }
-    .skeleton::after{ content:""; position:absolute; inset:0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); animation: shimmer 1.2s infinite; }
+    /* ===== Filters (chips) ===== */
+    .chips{ display:grid; grid-template-columns: 1fr; gap:10px; padding:12px; }
+    @media (min-width: 390px){ .chips{ grid-template-columns: repeat(3, 1fr); } }
+    .chip{ display:flex; flex-direction:column; gap:6px; }
+    .chip label{ color: var(--muted); font-weight:800; font-size:.82rem; margin:0 2px; }
+    .chip .form-control, .chip .form-select{
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding:10px 12px; font-size:16px;
+    }
+    .chip .form-control:focus, .chip .form-select:focus{
+      outline:none; border-color: rgba(96,165,250,0.6);
+      box-shadow: 0 0 0 4px rgba(96,165,250,0.18);
+    }
+
+    /* ===== Category tiles ===== */
+    .category-grid{
+      display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:12px;
+    }
+    .cat{
+      padding:12px; border-radius: var(--radius);
+      background: rgba(255,255,255,0.08);
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow-sm); text-align:center;
+    }
+    .cat .k{ color: var(--muted); font-weight:800; font-size:.82rem; }
+    .cat .v{ font-weight:900; font-size:1.06rem; margin-top:6px; }
+    .gas .v{ color: var(--gasolina); } .hot .v{ color: var(--hotel); }
+    .food .v{ color: var(--comida); } .drink .v{ color: var(--bebida); }
+
+    /* ===== Tabs Redesigned ===== */
+    .nav-tabs{
+      margin-top:12px; border: 1px solid var(--stroke); border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      overflow: hidden;
+    }
+    .nav-tabs .nav-link{
+      border:none; color: var(--muted); font-weight:900; letter-spacing:.3px;
+      padding:12px 14px;
+    }
+    .nav-tabs .nav-link.active{
+      color:var(--text); background: linear-gradient(180deg, rgba(59,130,246,0.18), rgba(59,130,246,0.1));
+      border-right: 1px solid var(--stroke);
+    }
+
+    /* ===== Expense list + skeleton ===== */
+    .expense-list{ margin-top:12px; }
+    .expense-item{
+      display:block; padding:12px; margin-bottom:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      border:1px solid var(--stroke); border-left:4px solid var(--primary-2);
+      border-radius: var(--radius); box-shadow: var(--shadow-sm);
+    }
+    .expense-item.gasolina{ border-left-color: var(--gasolina); }
+    .expense-item.hotel{ border-left-color: var(--hotel); }
+    .expense-item.comida{ border-left-color: var(--comida); }
+    .expense-item.bebida{ border-left-color: var(--bebida); }
+
+    .expense-header{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .expense-date{ color: var(--muted); font-weight:800; font-size:.9rem; }
+    .expense-amount{ font-weight:900; color: var(--success); }
+    .expense-category{
+      display:inline-block; margin-top:8px; padding:6px 10px; border-radius: 999px; font-weight:800; font-size:.82rem;
+      border:1px solid var(--stroke); background: rgba(255,255,255,0.06);
+    }
+    .gasolina-category{ color: var(--gasolina); }
+    .hotel-category{ color: var(--hotel); }
+    .comida-category{ color: var(--comida); }
+    .bebida-category{ color: var(--bebida); }
+    .expense-description{ margin-top:8px; font-weight:800; }
+    .expense-footer{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top:10px; padding-top:10px; border-top: 1px dashed var(--stroke); color: var(--muted);
+    }
+    .action-btn{
+      min-width:44px; min-height:44px; border-radius: 12px; border:1px solid var(--stroke);
+      background: rgba(255,255,255,0.06); color: inherit;
+    }
+
+    /* Skeleton shimmer */
+    .skeleton{ position:relative; overflow:hidden; background: rgba(148,163,184,0.12); border-radius:12px; }
+    .skeleton::after{
+      content:""; position:absolute; inset:0; transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      animation: shimmer 1.2s infinite;
+    }
     @keyframes shimmer{ 100%{ transform: translateX(100%);} }
 
-    /* Other small helpers */
-    .loading{ text-align:center; padding:18px 8px; color: var(--muted); }
-    .fab{ position:fixed; right: calc(16px + env(safe-area-inset-right, 8px)); bottom: calc(90px + env(safe-area-inset-bottom, 8px)); width:60px; height:60px; border-radius:50%; background: linear-gradient(180deg, rgba(59,130,246,0.9), rgba(59,130,246,0.6)); border:1px solid rgba(96,165,250,0.5); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-xl); z-index:1200; }
-    .btn-primary{ width:100%; padding:12px; border-radius: 14px; }
-
-    @media (max-width:420px){
-      .action-btn{ min-width:48px; min-height:48px; }
-      .fab{ width:64px; height:64px; }
+    /* ===== Forms ===== */
+    .form-card{ padding:14px; margin-top:12px; }
+    .form-card h3{ margin:0 0 10px; display:flex; gap:8px; align-items:center; font-size:1rem; }
+    .form-label{ color: var(--muted); font-weight:800; }
+    .btn-primary{
+      width:100%; padding:12px; border-radius: 14px; border: 1px solid rgba(96,165,250,0.35);
+      background: linear-gradient(180deg, rgba(59,130,246,0.35), rgba(59,130,246,0.22));
+      color:var(--text); font-weight:900; letter-spacing:.3px; box-shadow: var(--shadow-md);
     }
+    .btn-primary:active{ transform: translateY(1px); }
+
+    /* ===== Chart ===== */
+    .chart-wrap{ margin-top:12px; padding:12px; }
+    canvas#expenses-chart{ width:100%; height:240px; }
+
+    /* ===== FAB ===== */
+    .fab{
+      position:fixed; right: calc(16px + env(safe-area-inset-right, 8px));
+      bottom: calc(90px + env(safe-area-inset-bottom, 8px));
+      width:60px; height:60px; border-radius:50%;
+      background: linear-gradient(180deg, rgba(59,130,246,0.9), rgba(59,130,246,0.6));
+      border:1px solid rgba(96,165,250,0.5); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: var(--shadow-xl); z-index:1200;
+    }
+
+    /* ===== Bottom Nav ===== */
+    .bottom-nav{
+      position: fixed; left:0; right:0; bottom:0; z-index:1100;
+      height: 64px; padding-bottom: env(safe-area-inset-bottom, 6px);
+      display:flex; align-items:center; justify-content:space-around; gap:6px;
+      background: linear-gradient(180deg, var(--bg-glass), rgba(255,255,255,0.02));
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--stroke);
+    }
+    .bottom-nav .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; color: var(--muted); font-weight:900; font-size:.78rem; }
+    .bottom-nav .nav-item.active{ color: var(--text); }
+
+    /* ===== Loading ===== */
+    .loading{ text-align:center; padding:18px 8px; color: var(--muted); }
+    .spinner{ border:4px solid rgba(96,165,250,0.12); border-top:4px solid var(--primary);
+      width:36px; height:36px; border-radius:50%; animation: spin 1s linear infinite; margin: 8px auto; }
+    @keyframes spin{ 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
+
+    @media (max-width:480px){ .category-grid{ grid-template-columns: repeat(2,1fr); } }
   </style>
 </head>
 <body>
@@ -187,101 +317,134 @@
       </div>
     </section>
 
-    <!-- Table: historial -->
-    <section class="glass section">
-      <div class="table-wrap">
-        <table class="expenses-table" aria-describedby="table-desc">
-          <caption id="table-desc" style="display:none">Historial de gastos</caption>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Categoría</th>
-              <th>Descripción</th>
-              <th style="text-align:right">Monto</th>
-              <th>Método</th>
-              <th>Viaje</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="expenses-tbody">
-            <!-- Rows se insertan vía JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="d-grid gap-2 mt-2">
-        <button id="loadMoreBtn" class="btn btn-outline-secondary" style="display:none;">Cargar más</button>
-      </div>
+    <!-- Category tiles -->
+    <section class="category-grid section">
+      <div class="cat gas"><div class="k">Gasolina</div><div class="v" id="gasolina-amount">$0</div></div>
+      <div class="cat hot"><div class="k">Hotel</div><div class="v" id="hotel-amount">$0</div></div>
+      <div class="cat food"><div class="k">Comida</div><div class="v" id="comida-amount">$0</div></div>
+      <div class="cat drink"><div class="k">Bebida</div><div class="v" id="bebida-amount">$0</div></div>
     </section>
 
-    <!-- Add / Edit form (igual que antes) -->
-    <section class="tab-pane" id="add-form-section" role="region" aria-label="Formulario de gasto">
-      <div class="glass form-card" style="margin-top:12px;">
-        <h3><i class="fas fa-plus-circle"></i> Registrar / Editar Gasto</h3>
-        <form id="expense-form" novalidate>
-          <input type="hidden" id="edit-id" value="">
-          <div class="mb-3">
-            <label class="form-label" for="expense-date">Fecha</label>
-            <input type="date" class="form-control" id="expense-date" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="expense-category">Categoría</label>
-            <select class="form-select" id="expense-category" required>
-              <option value="">Seleccionar categoría</option>
-              <option value="gasolina">🚗 Gasolina</option>
-              <option value="hotel">🏨 Hotel</option>
-              <option value="comida">🍽️ Comida</option>
-              <option value="bebida">🥤 Bebida</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="expense-description">Descripción</label>
-            <input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required />
-            <div class="form-text">Mínimo 3 caracteres.</div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="expense-amount">Monto</label>
-            <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required />
-            <div class="d-flex justify-content-between mt-2" style="color:var(--muted);">
-              <small><strong>Total actual (viaje):</strong></small>
-              <small id="current-total-form" style="font-weight:900;">$0</small>
-            </div>
-            <div class="d-flex justify-content-between" style="color:var(--muted);">
-              <small><strong>Total si guardas (viaje):</strong></small>
-              <small id="projected-total-form" style="font-weight:900;">$0</small>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="expense-payment-method">Método de Pago</label>
-            <select class="form-select" id="expense-payment-method">
-              <option value="Efectivo">💵 Efectivo</option>
-              <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
-              <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
-              <option value="Transferencia">📱 Transferencia</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="expense-trip">Viaje (Opcional)</label>
-            <input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje" />
-          </div>
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-check-circle me-2"></i> <span id="submitLabel">Guardar Gasto</span>
-            </button>
-            <button type="button" id="btnClearForm" class="btn btn-outline-secondary">Limpiar</button>
-          </div>
-        </form>
-      </div>
-    </section>
+    <!-- Tabs -->
+    <ul class="nav nav-tabs glass section" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab">
+          <i class="fas fa-list"></i> Gastos
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab">
+          <i class="fas fa-plus-circle"></i> Agregar
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+          <i class="fas fa-chart-pie"></i> Reportes
+        </button>
+      </li>
+    </ul>
 
+    <div class="tab-content" id="myTabContent">
+      <!-- GASTOS -->
+      <div class="tab-pane fade show active" id="expenses" role="tabpanel">
+        <div id="expense-list" class="expense-list" aria-live="polite"></div>
+        <div class="d-grid gap-2 mt-2">
+          <button id="loadMoreBtn" class="btn btn-outline-secondary" style="display:none;">Cargar más</button>
+        </div>
+      </div>
+
+      <!-- AGREGAR -->
+      <div class="tab-pane fade" id="add" role="tabpanel">
+        <div class="glass form-card">
+          <h3><i class="fas fa-plus-circle"></i> Registrar Gasto</h3>
+          <form id="expense-form" novalidate>
+            <input type="hidden" id="edit-id" value="">
+            <div class="mb-3">
+              <label class="form-label" for="expense-date">Fecha</label>
+              <input type="date" class="form-control" id="expense-date" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-category">Categoría</label>
+              <select class="form-select" id="expense-category" required>
+                <option value="">Seleccionar categoría</option>
+                <option value="gasolina">🚗 Gasolina</option>
+                <option value="hotel">🏨 Hotel</option>
+                <option value="comida">🍽️ Comida</option>
+                <option value="bebida">🥤 Bebida</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-description">Descripción</label>
+              <input type="text" class="form-control" id="expense-description" placeholder="Detalles del gasto" required />
+              <div class="form-text">Mínimo 3 caracteres.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-amount">Monto</label>
+              <input type="number" class="form-control" id="expense-amount" placeholder="0" step="1" min="0" required />
+              <div class="d-flex justify-content-between mt-2" style="color:var(--muted);">
+                <small><strong>Total actual (viaje):</strong></small>
+                <small id="current-total-form" style="font-weight:900;">$0</small>
+              </div>
+              <div class="d-flex justify-content-between" style="color:var(--muted);">
+                <small><strong>Total si guardas (viaje):</strong></small>
+                <small id="projected-total-form" style="font-weight:900;">$0</small>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-payment-method">Método de Pago</label>
+              <select class="form-select" id="expense-payment-method">
+                <option value="Efectivo">💵 Efectivo</option>
+                <option value="Tarjeta de Crédito">💳 Tarjeta de Crédito</option>
+                <option value="Tarjeta de Débito">💳 Tarjeta de Débito</option>
+                <option value="Transferencia">📱 Transferencia</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="expense-trip">Viaje (Opcional)</label>
+              <input type="text" class="form-control" id="expense-trip" placeholder="Identificador del viaje" />
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check-circle me-2"></i> <span id="submitLabel">Guardar Gasto</span>
+              </button>
+              <button type="button" id="btnClearForm" class="btn btn-outline-secondary">Limpiar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- REPORTES -->
+      <div class="tab-pane fade" id="reports" role="tabpanel">
+        <div class="glass form-card">
+          <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
+          <div class="glass chart-wrap">
+            <canvas id="expenses-chart"></canvas>
+          </div>
+          <div class="category-grid" style="margin-top:12px;">
+            <div class="cat gas"><div class="k">Gasolina</div><div class="v" id="report-gasolina">0%</div></div>
+            <div class="cat hot"><div class="k">Hotel</div><div class="v" id="report-hotel">0%</div></div>
+            <div class="cat food"><div class="k">Comida</div><div class="v" id="report-comida">0%</div></div>
+            <div class="cat drink"><div class="k">Bebida</div><div class="v" id="report-bebida">0%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- FAB -->
-  <button class="fab" id="openFormFab" aria-label="Agregar gasto">
+  <button class="fab" data-bs-toggle="tab" data-bs-target="#add" aria-label="Agregar gasto">
     <i class="fas fa-plus"></i>
   </button>
 
-  <!-- Toast -->
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navegación">
+    <div class="nav-item active" data-target="#expenses"><i class="fas fa-home"></i><small>Inicio</small></div>
+    <div class="nav-item" data-target="#expenses"><i class="fas fa-receipt"></i><small>Gastos</small></div>
+    <div class="nav-item" data-target="#reports"><i class="fas fa-chart-bar"></i><small>Reportes</small></div>
+    <div class="nav-item" data-target="#add"><i class="fas fa-user-circle"></i><small>Perfil</small></div>
+  </nav>
+
+  <!-- Toast container -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1300">
     <div id="appToast" class="toast text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
@@ -303,7 +466,6 @@
       limit, startAfter, serverTimestamp, Timestamp
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    /* ===== Firebase config (mismo que usas) ===== */
     const firebaseConfig = {
       apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
       authDomain: "crm-gastos-viaje.firebaseapp.com",
@@ -325,10 +487,14 @@
     function formatCurrency(n){ n = Number(n)||0; return `$${new Intl.NumberFormat('es-CO').format(Math.round(n))}`; }
     function debounce(fn, wait=300){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; }
 
-    // Toast API
+    // Toast API (Bootstrap)
     const toastEl = $("#appToast");
     let toast = new bootstrap.Toast(toastEl, { delay: 2500 });
-    function showToast(msg, type="primary"){ $("#toastMsg").textContent = msg; toastEl.className = `toast text-bg-${type} border-0`; toast.show(); }
+    function showToast(msg, type="primary"){
+      $("#toastMsg").textContent = msg;
+      toastEl.className = `toast text-bg-${type} border-0`;
+      toast.show();
+    }
 
     // Theme toggle
     const themeToggle = $("#themeToggle");
@@ -341,15 +507,14 @@
       applyTheme(next); localStorage.setItem("theme", next);
     });
 
-    /* ===== Estado / paginación ===== */
+    /* ===== Estado / Paginación ===== */
     const pageSize = 10;
     let lastVisible = null;
     let moreAvailable = false;
     const categoryNames  = { gasolina:"Gasolina", hotel:"Hotel", comida:"Comida", bebida:"Bebida" };
-    const categoryColors = { gasolina:getComputedStyle(document.documentElement).getPropertyValue('--gasolina').trim() || "#60a5fa", hotel:getComputedStyle(document.documentElement).getPropertyValue('--hotel').trim() || "#a78bfa", comida:getComputedStyle(document.documentElement).getPropertyValue('--comida').trim() || "#34d399", bebida:getComputedStyle(document.documentElement).getPropertyValue('--bebida').trim() || "#f59e0b" };
     const tripTotals = {};
 
-    /* ===== Utilities de formulario ===== */
+    /* ===== Utilities de formulario (limpieza explícita) ===== */
     function clearFormFields(){
       $("#edit-id").value = "";
       const today = new Date().toISOString().slice(0,10);
@@ -365,7 +530,7 @@
       document.activeElement.blur && document.activeElement.blur();
     }
 
-    /* ===== Firestore helpers: trips & totals ===== */
+    /* ===== Trips helpers ===== */
     async function fetchTripsAndPopulate(){
       try{
         const snap = await getDocs(collection(db,"travel_expenses"));
@@ -396,7 +561,15 @@
       }catch(e){ console.error("Total trip error:",e); return 0; }
     }
 
-    /* ===== Construir query con filtros ===== */
+    /* ===== Render skeleton y paginación ===== */
+    function renderSkeleton(){
+      const list = $("#expense-list");
+      list.innerHTML = `
+        <div class="expense-item"><div class="skeleton" style="height:16px; width:40%;"></div><div class="skeleton" style="height:14px; width:20%; margin-top:10px;"></div><div class="skeleton" style="height:12px; width:70%; margin-top:10px;"></div></div>
+        <div class="expense-item"><div class="skeleton" style="height:16px; width:35%;"></div><div class="skeleton" style="height:14px; width:25%; margin-top:10px;"></div><div class="skeleton" style="height:12px; width:60%; margin-top:10px;"></div></div>
+      `;
+    }
+
     function buildBaseQuery(applyFilters=true){
       const base = collection(db,"travel_expenses");
       const cs = [];
@@ -419,23 +592,17 @@
       return cs.length ? query(base, ...cs, orderBy("date","desc")) : query(base, orderBy("date","desc"));
     }
 
-    /* ===== Cargar gastos y poblar tabla ===== */
-    function renderSkeletonRows(){
-      const tbody = $("#expenses-tbody");
-      tbody.innerHTML = `<tr><td colspan="7"><div class="skeleton"></div></td></tr><tr><td colspan="7"><div class="skeleton"></div></td></tr>`;
-    }
-
     async function loadExpenses(reset=true){
-      const tbody = $("#expenses-tbody");
+      const list = $("#expense-list");
       const loadMoreBtn = $("#loadMoreBtn");
-      if(reset){ lastVisible = null; moreAvailable = false; renderSkeletonRows(); tbody.innerHTML = ''; }
+      if(reset){ lastVisible = null; moreAvailable = false; renderSkeleton(); list.innerHTML = ''; }
       try{
         const baseQuery = buildBaseQuery(true);
         let qy = lastVisible ? query(baseQuery, startAfter(lastVisible), limit(pageSize)) : query(baseQuery, limit(pageSize));
         const snap = await getDocs(qy);
-        if(reset) tbody.innerHTML = '';
+        if(reset) list.innerHTML = '';
         if(snap.empty && reset){
-          tbody.innerHTML = `<tr><td colspan="7" class="loading">No hay gastos con estos filtros</td></tr>`;
+          list.innerHTML = `<div class="loading"><p>No hay gastos con estos filtros</p></div>`;
           updateStats(0, { gasolina:0, hotel:0, comida:0, bebida:0 });
           const t = await computeTotalForTrip($("#filter-trip").value || "");
           $("#trip-total-badge").textContent = formatCurrency(t);
@@ -443,99 +610,111 @@
           return;
         }
 
-        // acumular totales de la página
-        let totalPage = 0;
+        let total = 0;
         const tot = { gasolina:0, hotel:0, comida:0, bebida:0 };
 
         snap.forEach(d=>{
           const e = { id:d.id, ...d.data() };
-          const amt = Number(e.amount)||0; totalPage += amt;
+          const amt = Number(e.amount)||0; total += amt;
           if(tot.hasOwnProperty(e.category)) tot[e.category] += amt;
 
-          // fecha
+          const el = document.createElement('div');
+          el.className = `expense-item ${e.category||''}`;
           const dd = e.date && e.date.toDate ? e.date.toDate() : new Date(e.date);
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td data-label="Fecha">${formatDate(dd)}</td>
-            <td data-label="Categoría"><span class="cat-badge" style="color:${categoryColors[e.category] || '#fff'}">${categoryNames[e.category]||'Otra'}</span></td>
-            <td data-label="Descripción">${e.description || 'Sin descripción'}</td>
-            <td data-label="Monto" class="amount-cell">${formatCurrency(amt)}</td>
-            <td data-label="Método">${e.paymentMethod || 'No especificado'}</td>
-            <td data-label="Viaje">${e.trip || ''}</td>
-            <td data-label="Acciones" class="actions-cell" style="white-space:nowrap">
-              <button class="action-btn edit" data-id="${e.id}" title="Editar"><i class="fas fa-edit"></i></button>
-              <button class="action-btn delete" data-id="${e.id}" title="Eliminar"><i class="fas fa-trash"></i></button>
-            </td>
+          el.innerHTML = `
+            <div class="expense-header">
+              <div class="expense-date">${formatDate(dd)}</div>
+              <div class="expense-amount">${formatCurrency(amt)}</div>
+            </div>
+            <div class="expense-category ${e.category}-category">${categoryNames[e.category]||'Otra'}</div>
+            <div class="expense-description">${e.description||'Sin descripción'}</div>
+            <div class="expense-footer">
+              <div>${e.paymentMethod||'No especificado'}</div>
+              <div>
+                <button class="action-btn edit me-1" data-id="${e.id}" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete" data-id="${e.id}" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
           `;
-          tbody.appendChild(row);
+          list.appendChild(el);
         });
 
         lastVisible = snap.docs[snap.docs.length - 1];
         moreAvailable = snap.size === pageSize;
         loadMoreBtn.style.display = moreAvailable ? 'block' : 'none';
 
-        updateStats(totalPage, tot);
+        updateStats(total, tot);
 
-        // Delegación de eventos: edit / delete
-        // eliminamos y reasignamos para evitar duplicados: (simple approach)
-        tbody.querySelectorAll(".action-btn.delete").forEach(btn=>{
-          btn.removeEventListener?.('click', onDeleteClick);
-          btn.addEventListener('click', onDeleteClick);
+        list.querySelectorAll(".action-btn.delete").forEach(btn=>{
+          btn.addEventListener("click", async ()=>{
+            const id = btn.getAttribute("data-id");
+            await deleteExpense(id);
+            await goToFirstPageAndRefresh();
+          });
         });
-        tbody.querySelectorAll(".action-btn.edit").forEach(btn=>{
-          btn.removeEventListener?.('click', onEditClick);
-          btn.addEventListener('click', onEditClick);
+        list.querySelectorAll(".action-btn.edit").forEach(btn=>{
+          btn.addEventListener("click", async ()=>{
+            const id = btn.getAttribute("data-id");
+            await loadExpenseIntoForm(id);
+            new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+          });
         });
 
-        // trip badge global
         const tripTotal = await computeTotalForTrip($("#filter-trip").value || "");
         $("#trip-total-badge").textContent = formatCurrency(tripTotal);
         fetchTripsAndPopulate().catch(()=>{});
       }catch(e){
-        console.error("Load error:", e);
-        tbody.innerHTML = `<tr><td colspan="7" class="loading">Error al cargar. Reintenta.</td></tr>`;
+        console.error("Load error:",e);
+        list.innerHTML = `<div class="loading"><p>Error al cargar. Reintenta.</p></div>`;
         showToast("Error al cargar gastos", "danger");
         $("#loadMoreBtn").style.display = 'none';
       }
     }
 
-    function onDeleteClick(e){
-      const id = e.currentTarget.getAttribute('data-id');
-      deleteExpense(id).then(()=> goToFirstPageAndRefresh()).catch(()=>{});
-    }
-    function onEditClick(e){
-      const id = e.currentTarget.getAttribute('data-id');
-      loadExpenseIntoForm(id).then(()=> {
-        // scroll to form for/mobile, focus first input
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }).catch(()=>{});
+    async function loadMore(){
+      if(!moreAvailable) return;
+      await loadExpenses(false);
     }
 
-    async function loadMore(){ if(!moreAvailable) return; await loadExpenses(false); }
-    async function goToFirstPageAndRefresh(){ lastVisible = null; await loadExpenses(true); }
+    async function goToFirstPageAndRefresh(){
+      lastVisible = null;
+      await loadExpenses(true);
+    }
 
-    /* ===== CRUD ===== */
+    /* ===== CRUD: ADD / UPDATE / DELETE ===== */
     async function addExpense(data){
       try{
         const [y,m,d] = data.date.split('-');
         const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
         await addDoc(collection(db,"travel_expenses"), {
-          ...data, date: Timestamp.fromDate(dateUTC), createdAt: serverTimestamp()
+          ...data,
+          date: Timestamp.fromDate(dateUTC),
+          createdAt: serverTimestamp()
         });
         const k = data.trip && String(data.trip).trim()!=='' ? String(data.trip) : "__NO_TRIP__";
         tripTotals[k] = undefined; tripTotals[""] = undefined;
         return true;
-      }catch(e){ console.error("Add error:",e); return false; }
+      }catch(e){
+        console.error("Add error:",e);
+        return false;
+      }
     }
 
     async function updateExpense(id, data){
       try{
         const [y,m,d] = data.date.split('-');
         const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
-        await updateDoc(doc(db,"travel_expenses", id), { ...data, date: Timestamp.fromDate(dateUTC), updatedAt: serverTimestamp() });
+        await updateDoc(doc(db,"travel_expenses", id), {
+          ...data,
+          date: Timestamp.fromDate(dateUTC),
+          updatedAt: serverTimestamp()
+        });
         for(const k in tripTotals) tripTotals[k] = undefined;
         return true;
-      }catch(e){ console.error("Update error:",e); return false; }
+      }catch(e){
+        console.error("Update error:",e);
+        return false;
+      }
     }
 
     async function deleteExpense(id){
@@ -544,10 +723,13 @@
         await deleteDoc(doc(db,"travel_expenses", id));
         for(const k in tripTotals) tripTotals[k] = undefined;
         showToast("Gasto eliminado", "primary");
-      }catch(e){ console.error("Delete error:",e); showToast("Error al eliminar", "danger"); }
+      }catch(e){
+        console.error("Delete error:",e);
+        showToast("Error al eliminar", "danger");
+      }
     }
 
-    /* ===== Load single expense into form for editing ===== */
+    /* ===== Cargar un gasto al formulario para edición ===== */
     async function loadExpenseIntoForm(id){
       try{
         const q = query(collection(db,"travel_expenses"), where('__name__','==', id));
@@ -567,22 +749,53 @@
         $("#current-total-form").textContent = formatCurrency(tot);
         const amt = Number($("#expense-amount").value)||0;
         $("#projected-total-form").textContent = formatCurrency(tot + amt);
-        // abrir/mostrar form (scroll)
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }catch(e){ console.error("Load for edit error:", e); showToast("Error al cargar gasto para edición", "danger"); }
+      }catch(e){
+        console.error("Load for edit error:", e);
+        showToast("Error al cargar gasto para edición", "danger");
+      }
     }
 
-    /* ===== Stats & Chart (igual comportamiento) ===== */
+    /* ===== Stats + Chart ===== */
     function updateStats(totalAmount, catTotals){
       $("#total-amount").textContent   = formatCurrency(totalAmount);
-      $("#gasolina-amount")?.textContent && ($("#gasolina-amount").textContent = formatCurrency(catTotals.gasolina || 0));
-      $("#hotel-amount")?.textContent && ($("#hotel-amount").textContent = formatCurrency(catTotals.hotel || 0));
-      $("#comida-amount")?.textContent && ($("#comida-amount").textContent = formatCurrency(catTotals.comida || 0));
-      $("#bebida-amount")?.textContent && ($("#bebida-amount").textContent = formatCurrency(catTotals.bebida || 0));
-      // no reconstrui el chart aquí para mantener simplicidad; si quieres lo integro de nuevo
+      $("#gasolina-amount").textContent= formatCurrency(catTotals.gasolina);
+      $("#hotel-amount").textContent   = formatCurrency(catTotals.hotel);
+      $("#comida-amount").textContent  = formatCurrency(catTotals.comida);
+      $("#bebida-amount").textContent  = formatCurrency(catTotals.bebida);
+      updateReportChart(totalAmount, catTotals);
     }
 
-    /* ===== Form validation & ARIA busy ===== */
+    function updateReportChart(total, catTotals){
+      const ctx = $("#expenses-chart");
+      if(!ctx) return;
+      if(window.expensesChart) window.expensesChart.destroy();
+      window.expensesChart = new Chart(ctx.getContext('2d'), {
+        type:'doughnut',
+        data:{
+          labels:['Gasolina','Hotel','Comida','Bebida'],
+          datasets:[{
+            data:[catTotals.gasolina, catTotals.hotel, catTotals.comida, catTotals.bebida],
+            backgroundColor:['#60a5fa','#a78bfa','#34d399','#f59e0b'],
+            borderWidth:2, borderColor:'rgba(255,255,255,0.9)'
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{ position:'bottom', labels:{ color:getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#0f172a' } },
+            tooltip:{ callbacks:{ label: (c)=> `${c.label}: ${formatCurrency(c.parsed)}` } }
+          }
+        }
+      });
+
+      const pct = (v)=> total ? Math.round((v/total)*100) : 0;
+      $("#report-gasolina").textContent = `${pct(catTotals.gasolina)}%`;
+      $("#report-hotel").textContent    = `${pct(catTotals.hotel)}%`;
+      $("#report-comida").textContent   = `${pct(catTotals.comida)}%`;
+      $("#report-bebida").textContent   = `${pct(catTotals.bebida)}%`;
+    }
+
+    /* ===== Form validations y ARIA busy ===== */
     function setBusy(isBusy){
       const main = $("#appMain");
       main.setAttribute('aria-busy', String(!!isBusy));
@@ -597,7 +810,7 @@
       return { ok:true };
     }
 
-    /* ===== Eventos UI principales ===== */
+    /* ===== Eventos UI ===== */
     document.addEventListener("DOMContentLoaded", async ()=>{
       const today = new Date();
       $("#expense-date").value = today.toISOString().split('T')[0];
@@ -608,17 +821,19 @@
 
       $("#loadMoreBtn").addEventListener("click", async ()=>{ await loadMore(); });
 
-      // Limpiar form
+      // Botón "Limpiar" explícito
       $("#btnClearForm").addEventListener("click", ()=> clearFormFields());
 
-      // Submit (add/update)
+      // Submit (add / update) - ahora limpiamos campos explícitamente tras éxito
       $("#expense-form").addEventListener("submit", async (e)=>{
         e.preventDefault();
         const btn = e.currentTarget.querySelector('button[type="submit"]');
         const labelSpan = $("#submitLabel");
+        const origText = labelSpan.textContent;
         btn.disabled = true;
         labelSpan.textContent = labelSpan.textContent.includes('Actualizar') ? 'Procesando...' : 'Guardando...';
         setBusy(true);
+
         try{
           const idEdit = $("#edit-id").value || '';
           const data = {
@@ -635,16 +850,25 @@
 
           if(idEdit){
             const ok = await updateExpense(idEdit, data);
-            if(ok){ showToast('✅ Gasto actualizado', 'primary'); clearFormFields(); }
-            else showToast('❌ Error al actualizar', 'danger');
+            if(ok){
+              showToast('✅ Gasto actualizado', 'primary');
+              clearFormFields();
+            }else{
+              showToast('❌ Error al actualizar', 'danger');
+            }
           }else{
             const ok = await addExpense(data);
-            if(ok){ showToast('✅ Gasto registrado', 'primary'); clearFormFields(); }
-            else showToast('❌ Error al registrar', 'danger');
+            if(ok){
+              showToast('✅ Gasto registrado', 'primary');
+              clearFormFields();
+            }else{
+              showToast('❌ Error al registrar', 'danger');
+            }
           }
 
           await fetchTripsAndPopulate();
           await goToFirstPageAndRefresh();
+          new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
         } finally {
           btn.disabled = false;
           labelSpan.textContent = 'Guardar Gasto';
@@ -652,7 +876,7 @@
         }
       });
 
-      // filtros -> recargar
+      // filtros -> recargar (reset paginación)
       const debouncedReload = debounce(()=> goToFirstPageAndRefresh(), 250);
       $("#filter-category").addEventListener("change", debouncedReload);
       $("#filter-date").addEventListener("change", debouncedReload);
@@ -662,7 +886,7 @@
         debouncedReload();
       });
 
-      // live totals in form
+      // formulario: totales por viaje en vivo
       const debouncedComputeTripForm = debounce(async (tripText)=>{
         const key = tripText && tripText.trim()!=='' ? tripText.trim() : "";
         const tot = await computeTotalForTrip(key==="" ? "" : key);
@@ -680,10 +904,27 @@
         $("#projected-total-form").textContent = formatCurrency(current + amt);
       });
 
-      // FAB abre form (scroll)
-      $("#openFormFab").addEventListener("click", ()=>{
+      // FAB abre "Agregar" y limpia formulario
+      document.querySelector(".fab").addEventListener("click", ()=>{
         clearFormFields();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+      });
+
+      // Tabs -> bottom nav activo + resize chart
+      document.querySelectorAll('#myTab button').forEach(btn=>{
+        btn.addEventListener('shown.bs.tab', function(){
+          const target = this.getAttribute('data-bs-target');
+          document.querySelectorAll('.bottom-nav .nav-item').forEach(i=> i.classList.toggle('active', i.dataset.target === target));
+          if(target==='#reports'){ setTimeout(()=>{ if(window.expensesChart) window.expensesChart.resize(); }, 120); }
+        });
+      });
+
+      // Bottom nav -> cambiar tab
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(i=>{
+        i.addEventListener('click', ()=>{
+          const t = i.dataset.target || '#expenses';
+          new bootstrap.Tab(document.querySelector(`[data-bs-target="${t}"]`)).show();
+        });
       });
 
     }); // DOMContentLoaded end
