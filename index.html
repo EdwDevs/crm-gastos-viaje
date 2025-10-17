@@ -591,11 +591,26 @@
       }
       return cs.length ? query(base, ...cs, orderBy("date","desc")) : query(base, orderBy("date","desc"));
     }
+    
+    async function calculateAndDisplayFullTotal() {
+        try {
+            const totalQuery = buildBaseQuery(true); 
+            const querySnapshot = await getDocs(totalQuery);
+            let totalAmount = 0;
+            querySnapshot.forEach((doc) => {
+                totalAmount += Number(doc.data().amount) || 0;
+            });
+            $('#total-amount').textContent = formatCurrency(totalAmount);
+        } catch (e) {
+            console.error("Error calculating full total:", e);
+            $('#total-amount').textContent = formatCurrency(0);
+        }
+    }
 
     async function loadExpenses(reset=true){
       const list = $("#expense-list");
       const loadMoreBtn = $("#loadMoreBtn");
-      if(reset){ lastVisible = null; moreAvailable = false; renderSkeleton(); list.innerHTML = ''; }
+      if(reset){ lastVisible = null; moreAvailable = false; list.innerHTML = ''; renderSkeleton(); }
       try{
         const baseQuery = buildBaseQuery(true);
         let qy = lastVisible ? query(baseQuery, startAfter(lastVisible), limit(pageSize)) : query(baseQuery, limit(pageSize));
@@ -603,20 +618,19 @@
         if(reset) list.innerHTML = '';
         if(snap.empty && reset){
           list.innerHTML = `<div class="loading"><p>No hay gastos con estos filtros</p></div>`;
-          updateStats(0, { gasolina:0, hotel:0, comida:0, bebida:0 });
+          updateCategoryStats({ gasolina:0, hotel:0, comida:0, bebida:0 });
           const t = await computeTotalForTrip($("#filter-trip").value || "");
           $("#trip-total-badge").textContent = formatCurrency(t);
           loadMoreBtn.style.display = 'none';
           return;
         }
 
-        let total = 0;
-        const tot = { gasolina:0, hotel:0, comida:0, bebida:0 };
+        const catTotalsForPage = { gasolina:0, hotel:0, comida:0, bebida:0 };
 
         snap.forEach(d=>{
           const e = { id:d.id, ...d.data() };
-          const amt = Number(e.amount)||0; total += amt;
-          if(tot.hasOwnProperty(e.category)) tot[e.category] += amt;
+          const amt = Number(e.amount)||0;
+          if(catTotalsForPage.hasOwnProperty(e.category)) catTotalsForPage[e.category] += amt;
 
           const el = document.createElement('div');
           el.className = `expense-item ${e.category||''}`;
@@ -642,12 +656,15 @@
         lastVisible = snap.docs[snap.docs.length - 1];
         moreAvailable = snap.size === pageSize;
         loadMoreBtn.style.display = moreAvailable ? 'block' : 'none';
-
-        updateStats(total, tot);
+        
+        if (reset) {
+            updateCategoryStats(catTotalsForPage);
+        }
 
         list.querySelectorAll(".action-btn.delete").forEach(btn=>{
           btn.addEventListener("click", async ()=>{
             const id = btn.getAttribute("data-id");
+            if(!confirm('¿Eliminar este gasto?')) return;
             await deleteExpense(id);
             await goToFirstPageAndRefresh();
           });
@@ -662,7 +679,7 @@
 
         const tripTotal = await computeTotalForTrip($("#filter-trip").value || "");
         $("#trip-total-badge").textContent = formatCurrency(tripTotal);
-        fetchTripsAndPopulate().catch(()=>{});
+        if(reset) fetchTripsAndPopulate().catch(()=>{});
       }catch(e){
         console.error("Load error:",e);
         list.innerHTML = `<div class="loading"><p>Error al cargar. Reintenta.</p></div>`;
@@ -678,17 +695,21 @@
 
     async function goToFirstPageAndRefresh(){
       lastVisible = null;
-      await loadExpenses(true);
+      await Promise.all([
+          calculateAndDisplayFullTotal(),
+          loadExpenses(true)
+      ]);
     }
 
     /* ===== CRUD: ADD / UPDATE / DELETE ===== */
     async function addExpense(data){
       try{
         const [y,m,d] = data.date.split('-');
-        const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
+        // CAMBIO: Se crea la fecha como local en lugar de UTC
+        const localDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
         await addDoc(collection(db,"travel_expenses"), {
           ...data,
-          date: Timestamp.fromDate(dateUTC),
+          date: Timestamp.fromDate(localDate),
           createdAt: serverTimestamp()
         });
         const k = data.trip && String(data.trip).trim()!=='' ? String(data.trip) : "__NO_TRIP__";
@@ -703,10 +724,11 @@
     async function updateExpense(id, data){
       try{
         const [y,m,d] = data.date.split('-');
-        const dateUTC = new Date(Date.UTC(parseInt(y), parseInt(m)-1, parseInt(d)));
+        // CAMBIO: Se crea la fecha como local en lugar de UTC
+        const localDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
         await updateDoc(doc(db,"travel_expenses", id), {
           ...data,
-          date: Timestamp.fromDate(dateUTC),
+          date: Timestamp.fromDate(localDate),
           updatedAt: serverTimestamp()
         });
         for(const k in tripTotals) tripTotals[k] = undefined;
@@ -718,7 +740,6 @@
     }
 
     async function deleteExpense(id){
-      if(!confirm('¿Eliminar este gasto?')) return;
       try{
         await deleteDoc(doc(db,"travel_expenses", id));
         for(const k in tripTotals) tripTotals[k] = undefined;
@@ -754,15 +775,15 @@
         showToast("Error al cargar gasto para edición", "danger");
       }
     }
-
-    /* ===== Stats + Chart ===== */
-    function updateStats(totalAmount, catTotals){
-      $("#total-amount").textContent   = formatCurrency(totalAmount);
+    
+    function updateCategoryStats(catTotals){
       $("#gasolina-amount").textContent= formatCurrency(catTotals.gasolina);
       $("#hotel-amount").textContent   = formatCurrency(catTotals.hotel);
       $("#comida-amount").textContent  = formatCurrency(catTotals.comida);
       $("#bebida-amount").textContent  = formatCurrency(catTotals.bebida);
-      updateReportChart(totalAmount, catTotals);
+      
+      const totalForChart = Object.values(catTotals).reduce((sum, val) => sum + val, 0);
+      updateReportChart(totalForChart, catTotals);
     }
 
     function updateReportChart(total, catTotals){
@@ -788,7 +809,7 @@
         }
       });
 
-      const pct = (v)=> total ? Math.round((v/total)*100) : 0;
+      const pct = (v)=> total > 0 ? Math.round((v/total)*100) : 0;
       $("#report-gasolina").textContent = `${pct(catTotals.gasolina)}%`;
       $("#report-hotel").textContent    = `${pct(catTotals.hotel)}%`;
       $("#report-comida").textContent   = `${pct(catTotals.comida)}%`;
@@ -817,21 +838,16 @@
       $("#filter-date").value  = today.toISOString().slice(0,7);
 
       await fetchTripsAndPopulate();
-      await loadExpenses(true);
+      await goToFirstPageAndRefresh();
 
       $("#loadMoreBtn").addEventListener("click", async ()=>{ await loadMore(); });
 
-      // Botón "Limpiar" explícito
       $("#btnClearForm").addEventListener("click", ()=> clearFormFields());
 
-      // Submit (add / update) - ahora limpiamos campos explícitamente tras éxito
       $("#expense-form").addEventListener("submit", async (e)=>{
         e.preventDefault();
         const btn = e.currentTarget.querySelector('button[type="submit"]');
-        const labelSpan = $("#submitLabel");
-        const origText = labelSpan.textContent;
         btn.disabled = true;
-        labelSpan.textContent = labelSpan.textContent.includes('Actualizar') ? 'Procesando...' : 'Guardando...';
         setBusy(true);
 
         try{
@@ -848,35 +864,30 @@
           const v = validateFormData(data);
           if(!v.ok){ showToast(v.msg, 'danger'); return; }
 
+          let ok;
           if(idEdit){
-            const ok = await updateExpense(idEdit, data);
-            if(ok){
-              showToast('✅ Gasto actualizado', 'primary');
-              clearFormFields();
-            }else{
-              showToast('❌ Error al actualizar', 'danger');
-            }
-          }else{
-            const ok = await addExpense(data);
-            if(ok){
-              showToast('✅ Gasto registrado', 'primary');
-              clearFormFields();
-            }else{
-              showToast('❌ Error al registrar', 'danger');
-            }
+            ok = await updateExpense(idEdit, data);
+            if(ok) showToast('✅ Gasto actualizado', 'primary');
+            else showToast('❌ Error al actualizar', 'danger');
+          } else {
+            ok = await addExpense(data);
+            if(ok) showToast('✅ Gasto registrado', 'primary');
+            else showToast('❌ Error al registrar', 'danger');
+          }
+          
+          if(ok) {
+            clearFormFields();
+            await fetchTripsAndPopulate();
+            await goToFirstPageAndRefresh();
+            new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
           }
 
-          await fetchTripsAndPopulate();
-          await goToFirstPageAndRefresh();
-          new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
         } finally {
           btn.disabled = false;
-          labelSpan.textContent = 'Guardar Gasto';
           setBusy(false);
         }
       });
-
-      // filtros -> recargar (reset paginación)
+      
       const debouncedReload = debounce(()=> goToFirstPageAndRefresh(), 250);
       $("#filter-category").addEventListener("change", debouncedReload);
       $("#filter-date").addEventListener("change", debouncedReload);
@@ -886,7 +897,6 @@
         debouncedReload();
       });
 
-      // formulario: totales por viaje en vivo
       const debouncedComputeTripForm = debounce(async (tripText)=>{
         const key = tripText && tripText.trim()!=='' ? tripText.trim() : "";
         const tot = await computeTotalForTrip(key==="" ? "" : key);
@@ -903,14 +913,12 @@
         const current = (tripTotals.hasOwnProperty(key) && typeof tripTotals[key]==='number') ? tripTotals[key] : 0;
         $("#projected-total-form").textContent = formatCurrency(current + amt);
       });
-
-      // FAB abre "Agregar" y limpia formulario
+      
       document.querySelector(".fab").addEventListener("click", ()=>{
         clearFormFields();
         new bootstrap.Tab($('[data-bs-target="#add"]')).show();
       });
-
-      // Tabs -> bottom nav activo + resize chart
+      
       document.querySelectorAll('#myTab button').forEach(btn=>{
         btn.addEventListener('shown.bs.tab', function(){
           const target = this.getAttribute('data-bs-target');
@@ -918,8 +926,7 @@
           if(target==='#reports'){ setTimeout(()=>{ if(window.expensesChart) window.expensesChart.resize(); }, 120); }
         });
       });
-
-      // Bottom nav -> cambiar tab
+      
       document.querySelectorAll('.bottom-nav .nav-item').forEach(i=>{
         i.addEventListener('click', ()=>{
           const t = i.dataset.target || '#expenses';
@@ -927,7 +934,7 @@
         });
       });
 
-    }); // DOMContentLoaded end
+    });
 
   </script>
 </body>
