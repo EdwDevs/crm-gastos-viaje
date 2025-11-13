@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>CRM Gastos Viaje</title>
+  <title>CRM Gastos Viaje Pro</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
@@ -12,132 +12,397 @@
     :root{
       --bg: #f7f9fc;
       --bg-soft: #ffffff;
-      --bg-glass: rgba(255,255,255,0.75);
+      --bg-glass: rgba(255,255,255,0.85);
       --stroke: rgba(9,30,66,0.12);
       --text: #0f172a;
       --muted: #6b7280;
       --primary: #2563eb;
+      --primary-hover: #1d4ed8;
       --success: #16a34a;
       --danger: #dc2626;
+      --warning: #f59e0b;
       --gasolina:#2563eb;
       --hotel:#7c3aed;
       --comida:#059669;
       --bebida:#d97706;
+      --radius-lg:16px;
       --radius:12px;
+      --shadow-xl: 0 24px 60px rgba(2,6,23,0.08);
       --shadow-md: 0 14px 36px rgba(2,6,23,0.08);
+      --shadow-sm: 0 8px 20px rgba(2,6,23,0.06);
     }
 
     [data-theme="dark"]{
       --bg: #0b1220;
       --bg-soft: #0f172a;
-      --bg-glass: rgba(17,24,39,0.55);
+      --bg-glass: rgba(17,24,39,0.7);
       --stroke: rgba(148,163,184,0.16);
       --text: #e5e7eb;
       --muted: #94a3b8;
       --primary:#60a5fa;
+      --primary-hover:#3b82f6;
       --success:#34d399;
       --danger:#f87171;
-      --gasolina:#60a5fa; --hotel:#a78bfa; --comida:#34d399; --bebida:#f59e0b;
+      --warning:#fbbf24;
+      --gasolina:#60a5fa;
+      --hotel:#a78bfa;
+      --comida:#34d399;
+      --bebida:#f59e0b;
     }
 
     * { box-sizing:border-box; margin:0; padding:0; }
+    
     body{
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 100% -10%, var(--bg-soft) 0%, transparent 40%),
+                  radial-gradient(1000px 700px at -10% 0%, var(--bg-soft) 0%, transparent 45%),
+                  linear-gradient(180deg, var(--bg), var(--bg));
       color: var(--text);
-      padding: 20px;
-      padding-bottom: 100px;
+      min-height: 100vh;
+      padding-bottom: 90px;
     }
 
-    .header {
+    /* ===== TOPBAR ===== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 12px 16px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--stroke);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      background: var(--bg-glass);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
+      gap: 12px;
     }
 
-    .stats {
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand i {
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg-soft);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .badge-total {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.08));
+      border: 1px solid rgba(96,165,250,0.3);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.95rem;
+    }
+
+    .badge-total i {
+      color: var(--primary);
+    }
+
+    /* ===== CONTAINER ===== */
+    .container-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .glass {
+      background: var(--bg-glass);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(12px);
+    }
+
+    .section {
+      margin-bottom: 16px;
+    }
+
+    /* ===== TABS ===== */
+    .nav-tabs {
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius-lg);
+      background: var(--bg-glass);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .nav-tabs .nav-link {
+      border: none;
+      color: var(--muted);
+      font-weight: 800;
+      padding: 14px 16px;
+      transition: all 0.2s;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--text);
+      background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(59,130,246,0.08));
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--primary);
+    }
+
+    /* ===== STATS CARDS ===== */
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
 
     .stat-card {
-      padding: 15px;
-      background: var(--bg-glass);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
+      padding: 16px;
       text-align: center;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-card.total {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(16,185,129,0.08));
+      border-color: rgba(52,211,153,0.3);
+    }
+
+    .stat-card.gasolina {
+      background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(59,130,246,0.08));
+      border-color: rgba(96,165,250,0.3);
+    }
+
+    .stat-card.hotel {
+      background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(124,58,237,0.08));
+      border-color: rgba(167,139,250,0.3);
+    }
+
+    .stat-card.comida {
+      background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(5,150,105,0.08));
+      border-color: rgba(52,211,153,0.3);
+    }
+
+    .stat-card.bebida {
+      background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08));
+      border-color: rgba(251,191,36,0.3);
     }
 
     .stat-label {
       color: var(--muted);
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 5px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
     }
 
     .stat-value {
-      font-size: 1.2rem;
+      font-size: 1.8rem;
       font-weight: 900;
+      line-height: 1;
+    }
+
+    .stat-card.total .stat-value {
       color: var(--success);
     }
 
-    .expenses-table {
-      width: 100%;
-      background: var(--bg-glass);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      overflow: hidden;
+    .stat-card.gasolina .stat-value {
+      color: var(--gasolina);
     }
 
-    .expenses-table thead {
-      background: rgba(59,130,246,0.1);
+    .stat-card.hotel .stat-value {
+      color: var(--hotel);
     }
 
-    .expenses-table th {
-      padding: 12px 10px;
-      text-align: left;
+    .stat-card.comida .stat-value {
+      color: var(--comida);
+    }
+
+    .stat-card.bebida .stat-value {
+      color: var(--bebida);
+    }
+
+    /* ===== FILTROS ===== */
+    .filters-section {
+      padding: 16px;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .filters-title {
+      font-size: 1.1rem;
       font-weight: 800;
-      font-size: 0.8rem;
-      border-bottom: 1px solid var(--stroke);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .expenses-table td {
-      padding: 10px;
-      border-bottom: 1px solid var(--stroke);
-      font-size: 0.85rem;
-    }
-
-    .expenses-table tbody tr:hover {
-      background: rgba(96, 165, 250, 0.05);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
+    .filter-badge {
+      background: rgba(96,165,250,0.2);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: var(--primary);
+      padding: 4px 10px;
       border-radius: 999px;
       font-size: 0.75rem;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .badge-gasolina { background: rgba(96,165,250,0.2); color: var(--gasolina); }
-    .badge-hotel { background: rgba(167,139,250,0.2); color: var(--hotel); }
-    .badge-comida { background: rgba(52,211,153,0.2); color: var(--comida); }
-    .badge-bebida { background: rgba(245,158,11,0.2); color: var(--bebida); }
+    .search-box {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 40px 12px 14px;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: var(--bg-soft);
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(96,165,250,0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .filters-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-label {
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select {
+      padding: 10px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: var(--bg-soft);
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .form-control:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(96,165,250,0.1);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
 
     .btn {
-      padding: 8px 12px;
+      padding: 10px 16px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      border-radius: var(--radius);
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-clear {
+      background: rgba(220,38,38,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(220,38,38,0.3);
+    }
+
+    .btn-clear:hover {
+      background: rgba(220,38,38,0.2);
     }
 
     .btn-primary {
@@ -145,99 +410,656 @@
       color: white;
     }
 
-    .btn-danger {
-      background: var(--danger);
-      color: white;
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-soft);
+      color: var(--text);
+      border: 1px solid var(--stroke);
+    }
+
+    /* ===== TABLA ===== */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius);
+    }
+
+    .expenses-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .expenses-table thead {
+      background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.08));
+      border-bottom: 2px solid var(--stroke);
+    }
+
+    .expenses-table th {
+      padding: 14px 12px;
+      text-align: left;
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .expenses-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--stroke);
+    }
+
+    .expenses-table tbody tr {
+      transition: background 0.2s;
+    }
+
+    .expenses-table tbody tr:hover {
+      background: rgba(96,165,250,0.05);
+    }
+
+    .table-date {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .table-category-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .table-category-badge.gasolina {
+      background: rgba(96,165,250,0.2);
+      color: var(--gasolina);
+      border: 1px solid rgba(96,165,250,0.4);
+    }
+
+    .table-category-badge.hotel {
+      background: rgba(167,139,250,0.2);
+      color: var(--hotel);
+      border: 1px solid rgba(167,139,250,0.4);
+    }
+
+    .table-category-badge.comida {
+      background: rgba(52,211,153,0.2);
+      color: var(--comida);
+      border: 1px solid rgba(52,211,153,0.4);
+    }
+
+    .table-category-badge.bebida {
+      background: rgba(251,191,36,0.2);
+      color: var(--bebida);
+      border: 1px solid rgba(251,191,36,0.4);
+    }
+
+    .table-amount {
+      font-weight: 900;
+      color: var(--success);
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .table-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .table-btn-edit {
+      background: rgba(59,130,246,0.1);
+      color: var(--primary);
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+
+    .table-btn-edit:hover {
+      background: rgba(59,130,246,0.2);
+    }
+
+    .table-btn-delete {
+      background: rgba(220,38,38,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(220,38,38,0.3);
+    }
+
+    .table-btn-delete:hover {
+      background: rgba(220,38,38,0.2);
     }
 
     .empty-state {
       text-align: center;
-      padding: 40px;
+      padding: 60px 20px;
       color: var(--muted);
     }
 
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: var(--muted);
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
     }
 
     @media (max-width: 768px) {
       .expenses-table th:nth-child(4),
-      .expenses-table td:nth-child(4) {
+      .expenses-table td:nth-child(4),
+      .expenses-table th:nth-child(5),
+      .expenses-table td:nth-child(5) {
         display: none;
       }
+      
+      .table-btn span {
+        display: none;
+      }
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-section {
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-submit {
+      flex: 1;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ===== GRÁFICAS ===== */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      padding: 20px;
+    }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      border: none;
+      box-shadow: var(--shadow-xl);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 999;
+      transition: all 0.3s;
+    }
+
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    /* ===== BOTTOM NAV ===== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--stroke);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      z-index: 1100;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 12px;
+    }
+
+    .nav-item:hover {
+      color: var(--primary);
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+      background: rgba(96,165,250,0.1);
+    }
+
+    .nav-item i {
+      font-size: 1.4rem;
+    }
+
+    .nav-item span {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== TOAST ===== */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast-item {
+      min-width: 300px;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      background: var(--bg-soft);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .toast-item.success {
+      border-color: var(--success);
+      background: linear-gradient(135deg, rgba(52,211,153,0.1), rgba(16,185,129,0.05));
+    }
+
+    .toast-item.danger {
+      border-color: var(--danger);
+      background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(239,68,68,0.05));
+    }
+
+    .toast-item.primary {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(96,165,250,0.1), rgba(59,130,246,0.05));
+    }
+
+    .toast-icon {
+      font-size: 1.2rem;
+    }
+
+    .toast-item.success .toast-icon {
+      color: var(--success);
+    }
+
+    .toast-item.danger .toast-icon {
+      color: var(--danger);
+    }
+
+    .toast-item.primary .toast-icon {
+      color: var(--primary);
+    }
+
+    .toast-body {
+      flex: 1;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 
 <body>
-  <div class="header">
-    <h1 style="font-size: 1.2rem; font-weight: 800;">
-      <i class="fas fa-plane-departure"></i> CRM Gastos
-    </h1>
-    <button class="btn btn-primary" onclick="location.reload()">
-      <i class="fas fa-sync"></i> Recargar
-    </button>
-  </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-label">TOTAL</div>
-      <div class="stat-value" id="total-amount">$0</div>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="brand">
+      <i class="fas fa-plane-departure"></i>
+      <h1>CRM Gastos Pro</h1>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">GASTOS</div>
-      <div class="stat-value" id="total-count">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">GASOLINA</div>
-      <div class="stat-value" id="gasolina-amount" style="color: var(--gasolina);">$0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">HOTEL</div>
-      <div class="stat-value" id="hotel-amount" style="color: var(--hotel);">$0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">COMIDA</div>
-      <div class="stat-value" id="comida-amount" style="color: var(--comida);">$0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">BEBIDA</div>
-      <div class="stat-value" id="bebida-amount" style="color: var(--bebida);">$0</div>
+    <div class="top-actions">
+      <div class="badge-total">
+        <i class="fas fa-wallet"></i>
+        <span id="trip-total-badge">$0</span>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="themeIcon"></i>
+      </button>
     </div>
   </div>
 
-  <table class="expenses-table">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Descripción</th>
-        <th>Categoría</th>
-        <th>Viaje</th>
-        <th>Monto</th>
-      </tr>
-    </thead>
-    <tbody id="expenses-tbody">
-      <tr>
-        <td colspan="5" class="loading">
-          <i class="fas fa-spinner fa-spin"></i> Cargando gastos...
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="container-main">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item flex-fill">
+        <button class="nav-link active w-100" data-bs-toggle="tab" data-bs-target="#expenses">
+          <i class="fas fa-list"></i> Gastos
+        </button>
+      </li>
+      <li class="nav-item flex-fill">
+        <button class="nav-link w-100" data-bs-toggle="tab" data-bs-target="#reports">
+          <i class="fas fa-chart-pie"></i> Reportes
+        </button>
+      </li>
+      <li class="nav-item flex-fill">
+        <button class="nav-link w-100" data-bs-toggle="tab" data-bs-target="#add">
+          <i class="fas fa-plus-circle"></i> Agregar
+        </button>
+      </li>
+    </ul>
 
-  <div id="error-message" style="display: none; margin-top: 20px; padding: 15px; background: rgba(220, 38, 38, 0.1); border: 1px solid var(--danger); border-radius: var(--radius); color: var(--danger);">
-    <strong>Error:</strong> <span id="error-text"></span>
+    <div class="tab-content">
+      <!-- TAB: GASTOS -->
+      <div class="tab-pane fade show active" id="expenses">
+        
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+          <div class="stat-card total">
+            <div class="stat-label">💰 Total General</div>
+            <div class="stat-value" id="total-amount">$0</div>
+          </div>
+          <div class="stat-card gasolina">
+            <div class="stat-label">⛽ Gasolina</div>
+            <div class="stat-value" id="gasolina-amount">$0</div>
+          </div>
+          <div class="stat-card hotel">
+            <div class="stat-label">🏨 Hotel</div>
+            <div class="stat-value" id="hotel-amount">$0</div>
+          </div>
+          <div class="stat-card comida">
+            <div class="stat-label">🍽️ Comida</div>
+            <div class="stat-value" id="comida-amount">$0</div>
+          </div>
+          <div class="stat-card bebida">
+            <div class="stat-label">🥤 Bebida</div>
+            <div class="stat-value" id="bebida-amount">$0</div>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="glass filters-section section">
+          <div class="filters-header">
+            <div class="filters-title">
+              <i class="fas fa-filter"></i>
+              Filtros Avanzados
+            </div>
+            <span class="filter-badge" id="activeFiltersCount">0 activos</span>
+          </div>
+
+          <div class="search-box">
+            <input type="text" id="filter-search" placeholder="🔍 Buscar por descripción..." />
+            <i class="fas fa-search search-icon"></i>
+          </div>
+
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label class="filter-label">Categoría</label>
+              <select id="filter-category" class="form-select">
+                <option value="">Todas</option>
+                <option value="gasolina">⛽ Gasolina</option>
+                <option value="hotel">🏨 Hotel</option>
+                <option value="comida">🍽️ Comida</option>
+                <option value="bebida">🥤 Bebida</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Mes</label>
+              <input type="month" id="filter-date" class="form-control" />
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Viaje</label>
+              <select id="filter-trip" class="form-select">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Ordenar por</label>
+              <select id="filter-sort" class="form-select">
+                <option value="date-desc">Más reciente</option>
+                <option value="date-asc">Más antiguo</option>
+                <option value="amount-desc">Mayor monto</option>
+                <option value="amount-asc">Menor monto</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn btn-clear" id="btnClearFilters">
+              <i class="fas fa-times-circle"></i> Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="glass section">
+          <div class="table-wrapper">
+            <table class="expenses-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Descripción</th>
+                  <th>Categoría</th>
+                  <th>Viaje</th>
+                  <th>Método</th>
+                  <th>Monto</th>
+                  <th style="text-align: center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-tbody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="empty-state" id="emptyState" style="display: none;">
+              <i class="fas fa-inbox"></i>
+              <h3>No hay gastos</h3>
+              <p>Usa los filtros o agrega un nuevo gasto</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: REPORTES -->
+      <div class="tab-pane fade" id="reports">
+        <div class="stats-grid">
+          <div class="stat-card total">
+            <div class="stat-label">💰 Total General</div>
+            <div class="stat-value" id="total-amount-reports">$0</div>
+          </div>
+        </div>
+
+        <div class="glass section">
+          <div class="chart-container">
+            <canvas id="expenses-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="stat-card gasolina">
+            <div class="stat-label">⛽ Gasolina</div>
+            <div class="stat-value" id="report-gasolina">0%</div>
+          </div>
+          <div class="stat-card hotel">
+            <div class="stat-label">🏨 Hotel</div>
+            <div class="stat-value" id="report-hotel">0%</div>
+          </div>
+          <div class="stat-card comida">
+            <div class="stat-label">🍽️ Comida</div>
+            <div class="stat-value" id="report-comida">0%</div>
+          </div>
+          <div class="stat-card bebida">
+            <div class="stat-label">🥤 Bebida</div>
+            <div class="stat-value" id="report-bebida">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: AGREGAR -->
+      <div class="tab-pane fade" id="add">
+        <div class="glass">
+          <form id="expense-form" class="form-section">
+            <input type="hidden" id="edit-id" />
+
+            <div class="form-group">
+              <label>📅 Fecha *</label>
+              <input type="date" id="expense-date" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label>📂 Categoría *</label>
+              <select id="expense-category" class="form-select" required>
+                <option value="">Selecciona una categoría</option>
+                <option value="gasolina">⛽ Gasolina</option>
+                <option value="hotel">🏨 Hotel</option>
+                <option value="comida">🍽️ Comida</option>
+                <option value="bebida">🥤 Bebida</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>📝 Descripción *</label>
+              <input type="text" id="expense-description" class="form-control" placeholder="Ej: Gasolina en Pemex" required />
+            </div>
+
+            <div class="form-group">
+              <label>💵 Monto (MXN) *</label>
+              <input type="number" id="expense-amount" class="form-control" step="0.01" min="0" placeholder="0.00" required />
+            </div>
+
+            <div class="form-group">
+              <label>💳 Método de Pago</label>
+              <select id="expense-payment-method" class="form-select">
+                <option value="Efectivo">💵 Efectivo</option>
+                <option value="Tarjeta">💳 Tarjeta</option>
+                <option value="Transferencia">📱 Transferencia</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>✈️ Viaje (opcional)</label>
+              <input type="text" id="expense-trip" class="form-control" list="trip-options" placeholder="Ej: Guadalajara Dic 2024" />
+              <datalist id="trip-options"></datalist>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="btnClearForm">
+                <i class="fas fa-eraser"></i> Limpiar
+              </button>
+              <button type="submit" class="btn-submit">
+                <i class="fas fa-save"></i> <span id="submitLabel">Guardar Gasto</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openAddForm()">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active" data-target="#expenses">
+      <i class="fas fa-list"></i>
+      <span>Gastos</span>
+    </div>
+    <div class="nav-item" data-target="#reports">
+      <i class="fas fa-chart-pie"></i>
+      <span>Reportes</span>
+    </div>
+    <div class="nav-item" data-target="#add">
+      <i class="fas fa-plus-circle"></i>
+      <span>Agregar</span>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy, updateDoc,
+      serverTimestamp, Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Tu configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
       authDomain: "crm-gastos-viaje.firebaseapp.com",
@@ -246,6 +1068,9 @@
       messagingSenderId: "1030088242238",
       appId: "1:1030088242238:web:53c2dcb3fc6642f82e4d6f"
     };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     const $ = id => document.getElementById(id);
     const formatCurrency = (val) => new Intl.NumberFormat('es-MX', { style:'currency', currency:'MXN' }).format(val || 0);
@@ -257,133 +1082,480 @@
       }
     };
 
-    function showError(message) {
-      $("error-message").style.display = 'block';
-      $("error-text").textContent = message;
+    const categoryNames = {
+      gasolina: 'Gasolina',
+      hotel: 'Hotel',
+      comida: 'Comida',
+      bebida: 'Bebida'
+    };
+
+    let allExpenses = [];
+    let tripTotals = {};
+
+    function debounce(fn, delay=300){
+      let t;
+      return function(...args){
+        clearTimeout(t);
+        t = setTimeout(()=> fn.apply(this, args), delay);
+      };
     }
 
-    async function loadExpenses() {
-      const tbody = $("expenses-tbody");
-      
-      try {
-        console.log("🚀 Iniciando Firebase...");
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        console.log("✅ Firebase inicializado");
+    function showToast(message, type='primary'){
+      const c = $("toastContainer");
+      const icons = {
+        success: 'fa-check-circle',
+        danger: 'fa-exclamation-circle',
+        primary: 'fa-info-circle'
+      };
+      const t = document.createElement('div');
+      t.className = `toast-item ${type}`;
+      t.innerHTML = `
+        <i class="fas ${icons[type]} toast-icon"></i>
+        <div class="toast-body">${message}</div>
+      `;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    }
 
-        console.log("📥 Obteniendo gastos...");
+    function toggleTheme(){
+      const html = document.documentElement;
+      const theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      $("themeIcon").className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    }
+    window.toggleTheme = toggleTheme;
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    $("themeIcon").className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+
+    function openAddForm() {
+      clearFormFields();
+      new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+    }
+    window.openAddForm = openAddForm;
+
+    async function fetchTripsAndPopulate(){
+      try{
+        const snap = await getDocs(collection(db, "travel_expenses"));
+        const trips = new Set();
+        tripTotals = {};
         
-        // Consulta MÁS SIMPLE posible - sin filtros, solo ordenar por fecha
-        const expensesRef = collection(db, "travel_expenses");
-        const q = query(expensesRef, orderBy("date", "desc"));
-        
-        console.log("🔄 Ejecutando consulta...");
-        const querySnapshot = await getDocs(q);
-        
-        console.log(`📊 Documentos obtenidos: ${querySnapshot.size}`);
-
-        if (querySnapshot.empty) {
-          console.log("⚠️ No hay documentos en la colección");
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="5" class="empty-state">
-                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                <strong>No hay gastos registrados</strong>
-                <p style="font-size: 0.9rem; margin-top: 5px;">La base de datos está vacía</p>
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        // Limpiar tabla
-        tbody.innerHTML = '';
-
-        // Calcular totales
-        let totalAmount = 0;
-        let totalCount = 0;
-        const catTotals = { gasolina: 0, hotel: 0, comida: 0, bebida: 0 };
-
-        // Procesar cada documento
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          console.log("📄 Documento:", data.description, formatCurrency(data.amount));
-          
-          // Sumar totales
-          const amount = Number(data.amount) || 0;
-          totalAmount += amount;
-          totalCount++;
-          
-          if (catTotals.hasOwnProperty(data.category)) {
-            catTotals[data.category] += amount;
+        snap.forEach(d => {
+          const data = d.data();
+          const t = data.trip;
+          if(t && typeof t === 'string' && t.trim() !== ''){
+            const key = t.trim();
+            trips.add(key);
+            if(!tripTotals[key]) tripTotals[key] = 0;
+            tripTotals[key] += (data.amount || 0);
           }
-
-          // Obtener fecha
-          let dateObj;
-          try {
-            dateObj = data.date && data.date.toDate ? data.date.toDate() : new Date();
-          } catch(e) {
-            dateObj = new Date();
-          }
-
-          // Crear fila
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td style="color: var(--muted); font-weight: 600; white-space: nowrap;">${formatDate(dateObj)}</td>
-            <td style="font-weight: 600;">${data.description || 'Sin descripción'}</td>
-            <td>
-              <span class="badge badge-${data.category || 'gasolina'}">
-                ${data.category ? data.category.charAt(0).toUpperCase() + data.category.slice(1) : 'N/A'}
-              </span>
-            </td>
-            <td style="color: var(--muted); font-size: 0.85rem;">${data.trip || '—'}</td>
-            <td style="font-weight: 900; color: var(--success);">${formatCurrency(amount)}</td>
-          `;
-          tbody.appendChild(row);
         });
 
-        // Actualizar estadísticas
-        $("total-amount").textContent = formatCurrency(totalAmount);
-        $("total-count").textContent = totalCount;
-        $("gasolina-amount").textContent = formatCurrency(catTotals.gasolina);
-        $("hotel-amount").textContent = formatCurrency(catTotals.hotel);
-        $("comida-amount").textContent = formatCurrency(catTotals.comida);
-        $("bebida-amount").textContent = formatCurrency(catTotals.bebida);
-
-        console.log("✅ Carga completada");
-        console.log("💰 Total:", formatCurrency(totalAmount));
-        console.log("📝 Gastos:", totalCount);
-
-      } catch (error) {
-        console.error("❌ ERROR:", error);
-        console.error("Código:", error.code);
-        console.error("Mensaje:", error.message);
+        const tripArr = Array.from(trips).sort();
+        const selFilter = $("filter-trip");
+        const dataList = $("trip-options");
         
-        let errorMsg = error.message;
-        if (error.code === 'permission-denied') {
-          errorMsg = 'Sin permisos para leer datos. Verifica las reglas de Firestore.';
-        } else if (error.code === 'unavailable') {
-          errorMsg = 'No hay conexión a internet o Firestore no está disponible.';
-        }
+        selFilter.innerHTML = '<option value="">Todos</option>' +
+          tripArr.map(t => `<option value="${t}">${t} (${formatCurrency(tripTotals[t])})</option>`).join('');
         
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 20px; color: var(--danger);">
-              <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-              <strong>Error al cargar gastos</strong>
-              <p style="font-size: 0.9rem; margin-top: 5px;">${errorMsg}</p>
-            </td>
-          </tr>
-        `;
-        
-        showError(errorMsg);
+        dataList.innerHTML = tripArr.map(t => `<option value="${t}">`).join('');
+      }catch(e){
+        console.error("Error trips:", e);
       }
     }
 
-    // Iniciar carga automáticamente
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("🌐 Página cargada, iniciando...");
-      loadExpenses();
+    async function computeTotalForTrip(tripKey){
+      if(tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey]==='number') return tripTotals[tripKey];
+      try{
+        const base = collection(db,"travel_expenses");
+        let qy;
+        if(tripKey==="") qy=query(base);
+        else qy=query(base, where("trip","==",tripKey));
+        const snap = await getDocs(qy);
+        let tot=0; snap.forEach(s=> tot += Number(s.data().amount)||0 );
+        tripTotals[tripKey]=tot; return tot;
+      }catch(e){ return 0; }
+    }
+
+    function getActiveFiltersCount(){
+      let count = 0;
+      if($("filter-search").value.trim()) count++;
+      if($("filter-category").value) count++;
+      if($("filter-date").value) count++;
+      if($("filter-trip").value) count++;
+      return count;
+    }
+
+    function applyFilters(expenses){
+      let filtered = [...expenses];
+
+      // Búsqueda
+      const searchText = $("filter-search").value.trim().toLowerCase();
+      if(searchText){
+        filtered = filtered.filter(e => 
+          (e.description || '').toLowerCase().includes(searchText)
+        );
+      }
+
+      // Categoría
+      const category = $("filter-category").value;
+      if(category){
+        filtered = filtered.filter(e => e.category === category);
+      }
+
+      // Mes
+      const monthVal = $("filter-date").value;
+      if(monthVal){
+        const [y,m] = monthVal.split('-');
+        filtered = filtered.filter(e => {
+          if(!e.date || !e.date.toDate) return false;
+          const d = e.date.toDate();
+          return d.getFullYear() === parseInt(y) && (d.getMonth() + 1) === parseInt(m);
+        });
+      }
+
+      // Viaje
+      const tripVal = $("filter-trip").value;
+      if(tripVal){
+        filtered = filtered.filter(e => (e.trip || '') === tripVal);
+      }
+
+      // Ordenar
+      const sortBy = $("filter-sort").value;
+      filtered.sort((a, b) => {
+        switch(sortBy){
+          case 'date-desc':
+            return (b.date?.seconds || 0) - (a.date?.seconds || 0);
+          case 'date-asc':
+            return (a.date?.seconds || 0) - (b.date?.seconds || 0);
+          case 'amount-desc':
+            return (b.amount || 0) - (a.amount || 0);
+          case 'amount-asc':
+            return (a.amount || 0) - (b.amount || 0);
+          default:
+            return 0;
+        }
+      });
+
+      return filtered;
+    }
+
+    function updateStatistics(expenses){
+      const total = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const catTotals = {
+        gasolina: expenses.filter(e => e.category === 'gasolina').reduce((s,e)=> s + (e.amount||0), 0),
+        hotel: expenses.filter(e => e.category === 'hotel').reduce((s,e)=> s + (e.amount||0), 0),
+        comida: expenses.filter(e => e.category === 'comida').reduce((s,e)=> s + (e.amount||0), 0),
+        bebida: expenses.filter(e => e.category === 'bebida').reduce((s,e)=> s + (e.amount||0), 0)
+      };
+
+      $("total-amount").textContent = formatCurrency(total);
+      $("total-amount-reports").textContent = formatCurrency(total);
+      $("gasolina-amount").textContent = formatCurrency(catTotals.gasolina);
+      $("hotel-amount").textContent = formatCurrency(catTotals.hotel);
+      $("comida-amount").textContent = formatCurrency(catTotals.comida);
+      $("bebida-amount").textContent = formatCurrency(catTotals.bebida);
+
+      updateChart(total, catTotals);
+    }
+
+    function updateChart(total, catTotals){
+      const ctx = $("expenses-chart");
+      if(!ctx) return;
+      if(window.expensesChart) window.expensesChart.destroy();
+      
+      window.expensesChart = new Chart(ctx.getContext('2d'), {
+        type:'doughnut',
+        data:{
+          labels:['Gasolina','Hotel','Comida','Bebida'],
+          datasets:[{
+            data:[catTotals.gasolina, catTotals.hotel, catTotals.comida, catTotals.bebida],
+            backgroundColor:['#60a5fa','#a78bfa','#34d399','#f59e0b'],
+            borderWidth:3,
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bg')
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{
+              position:'bottom',
+              labels:{
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text'),
+                font: { size: 12, weight: 'bold' },
+                padding: 15
+              }
+            },
+            tooltip:{
+              callbacks:{
+                label: (c)=> `${c.label}: ${formatCurrency(c.parsed)}`
+              }
+            }
+          }
+        }
+      });
+
+      const pct = (v)=> total > 0 ? Math.round((v/total)*100) : 0;
+      $("report-gasolina").textContent = `${pct(catTotals.gasolina)}%`;
+      $("report-hotel").textContent = `${pct(catTotals.hotel)}%`;
+      $("report-comida").textContent = `${pct(catTotals.comida)}%`;
+      $("report-bebida").textContent = `${pct(catTotals.bebida)}%`;
+    }
+
+    function renderExpenses(){
+      const tbody = $("expenses-tbody");
+      const emptyState = $("emptyState");
+      
+      const filtered = applyFilters(allExpenses);
+      
+      $("activeFiltersCount").textContent = `${getActiveFiltersCount()} activos`;
+      
+      if(filtered.length === 0){
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      tbody.innerHTML = '';
+
+      filtered.forEach(e => {
+        const amt = Number(e.amount)||0;
+        const dateObj = e.date && e.date.toDate ? e.date.toDate() : new Date();
+        const catClass = e.category || 'gasolina';
+        const catLabel = categoryNames[e.category] || 'N/A';
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="table-date">${formatDate(dateObj)}</td>
+          <td style="font-weight: 600;">${e.description || 'Sin descripción'}</td>
+          <td>
+            <span class="table-category-badge ${catClass}">${catLabel}</span>
+          </td>
+          <td class="table-date">${e.trip || '—'}</td>
+          <td class="table-date">${e.paymentMethod || 'Efectivo'}</td>
+          <td class="table-amount">${formatCurrency(amt)}</td>
+          <td>
+            <div class="table-actions">
+              <button class="table-btn table-btn-edit" data-id="${e.id}">
+                <i class="fas fa-edit"></i><span> Editar</span>
+              </button>
+              <button class="table-btn table-btn-delete" data-id="${e.id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      tbody.querySelectorAll(".table-btn-delete").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          if(!confirm('¿Eliminar este gasto?')) return;
+          const id = btn.getAttribute("data-id");
+          await deleteExpense(id);
+        });
+      });
+      
+      tbody.querySelectorAll(".table-btn-edit").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-id");
+          await loadExpenseIntoForm(id);
+          new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+        });
+      });
+
+      updateStatistics(filtered);
+    }
+
+    async function loadAllExpenses(){
+      try{
+        const q = query(collection(db, "travel_expenses"), orderBy("date", "desc"));
+        const snap = await getDocs(q);
+        
+        allExpenses = [];
+        snap.forEach(d => {
+          allExpenses.push({ id: d.id, ...d.data() });
+        });
+
+        await fetchTripsAndPopulate();
+        renderExpenses();
+      }catch(e){
+        console.error("Load error:", e);
+        showToast("Error al cargar gastos", "danger");
+      }
+    }
+
+    async function addExpense(data){
+      try{
+        const [y,m,d] = data.date.split('-');
+        const localDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+        await addDoc(collection(db,"travel_expenses"), {
+          ...data,
+          date: Timestamp.fromDate(localDate),
+          createdAt: serverTimestamp()
+        });
+        return true;
+      }catch(e){
+        console.error("Add error:", e);
+        return false;
+      }
+    }
+
+    async function updateExpense(id, data){
+      try{
+        const [y,m,d] = data.date.split('-');
+        const localDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+        await updateDoc(doc(db,"travel_expenses", id), {
+          ...data,
+          date: Timestamp.fromDate(localDate),
+          updatedAt: serverTimestamp()
+        });
+        return true;
+      }catch(e){
+        console.error("Update error:", e);
+        return false;
+      }
+    }
+
+    async function deleteExpense(id){
+      try{
+        await deleteDoc(doc(db,"travel_expenses", id));
+        showToast("✅ Gasto eliminado", "success");
+        await loadAllExpenses();
+      }catch(e){
+        console.error("Delete error:", e);
+        showToast("❌ Error al eliminar", "danger");
+      }
+    }
+
+    async function loadExpenseIntoForm(id){
+      try{
+        const expense = allExpenses.find(e => e.id === id);
+        if(!expense){ showToast("No encontrado", "danger"); return; }
+        
+        $("edit-id").value = id;
+        $("expense-date").value = expense.date && expense.date.toDate ? expense.date.toDate().toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
+        $("expense-category").value = expense.category || '';
+        $("expense-description").value = expense.description || '';
+        $("expense-amount").value = expense.amount || '';
+        $("expense-payment-method").value = expense.paymentMethod || 'Efectivo';
+        $("expense-trip").value = expense.trip || '';
+        $("submitLabel").textContent = 'Actualizar Gasto';
+      }catch(e){
+        showToast("Error al cargar", "danger");
+      }
+    }
+
+    function clearFormFields(){
+      $("edit-id").value = '';
+      $("expense-date").value = new Date().toISOString().split('T')[0];
+      $("expense-category").value = '';
+      $("expense-description").value = '';
+      $("expense-amount").value = '';
+      $("expense-payment-method").value = 'Efectivo';
+      $("expense-trip").value = '';
+      $("submitLabel").textContent = 'Guardar Gasto';
+    }
+
+    function validateFormData(data){
+      if(!data.date) return { ok:false, msg:'Selecciona una fecha' };
+      if(!data.category) return { ok:false, msg:'Selecciona una categoría' };
+      if(!data.description || String(data.description).trim().length < 3) return { ok:false, msg:'Descripción muy corta' };
+      if(!data.amount || Number(data.amount) <= 0) return { ok:false, msg:'Monto inválido' };
+      return { ok:true };
+    }
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      $("expense-date").value = new Date().toISOString().split('T')[0];
+
+      await loadAllExpenses();
+
+      $("btnClearForm").addEventListener("click", ()=> clearFormFields());
+      
+      $("btnClearFilters").addEventListener("click", ()=>{
+        $("filter-search").value = '';
+        $("filter-category").value = '';
+        $("filter-date").value = '';
+        $("filter-trip").value = '';
+        $("filter-sort").value = 'date-desc';
+        renderExpenses();
+      });
+
+      $("expense-form").addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const btn = e.currentTarget.querySelector('button[type="submit"]');
+        btn.disabled = true;
+
+        try{
+          const idEdit = $("edit-id").value || '';
+          const data = {
+            date: $("expense-date").value,
+            category: $("expense-category").value,
+            description: $("expense-description").value.trim(),
+            amount: Number($("expense-amount").value),
+            paymentMethod: $("expense-payment-method").value,
+            trip: $("expense-trip").value.trim() || null
+          };
+
+          const v = validateFormData(data);
+          if(!v.ok){ showToast(v.msg, 'danger'); return; }
+
+          let ok;
+          if(idEdit){
+            ok = await updateExpense(idEdit, data);
+            if(ok) showToast('✅ Gasto actualizado', 'success');
+            else showToast('❌ Error al actualizar', 'danger');
+          } else {
+            ok = await addExpense(data);
+            if(ok) showToast('✅ Gasto guardado', 'success');
+            else showToast('❌ Error al guardar', 'danger');
+          }
+          
+          if(ok) {
+            clearFormFields();
+            await loadAllExpenses();
+            new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
+          }
+
+        } finally {
+          btn.disabled = false;
+        }
+      });
+      
+      const debouncedRender = debounce(()=> renderExpenses(), 250);
+      
+      $("filter-search").addEventListener("input", debouncedRender);
+      $("filter-category").addEventListener("change", debouncedRender);
+      $("filter-date").addEventListener("change", debouncedRender);
+      $("filter-sort").addEventListener("change", debouncedRender);
+      $("filter-trip").addEventListener("change", async function(){
+        const total = await computeTotalForTrip(this.value || "");
+        $("trip-total-badge").textContent = formatCurrency(total);
+        debouncedRender();
+      });
+      
+      document.querySelectorAll('.nav-tabs button').forEach(btn=>{
+        btn.addEventListener('shown.bs.tab', function(){
+          const target = this.getAttribute('data-bs-target');
+          document.querySelectorAll('.bottom-nav .nav-item').forEach(i=> 
+            i.classList.toggle('active', i.dataset.target === target)
+          );
+          if(target==='#reports' && window.expensesChart){
+            setTimeout(()=> window.expensesChart.resize(), 120);
+          }
+        });
+      });
+      
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(i=>{
+        i.addEventListener('click', ()=>{
+          const t = i.dataset.target || '#expenses';
+          new bootstrap.Tab(document.querySelector(`[data-bs-target="${t}"]`)).show();
+        });
+      });
     });
   </script>
 </body>
