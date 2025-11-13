@@ -989,12 +989,12 @@
 
             <div class="form-group">
               <label>📝 Descripción *</label>
-              <input type="text" id="expense-description" class="form-control" placeholder="Ej: Gasolina en Pemex" required />
+              <input type="text" id="expense-description" class="form-control" placeholder="Ej: Gasolina en estación Terpel" required />
             </div>
 
             <div class="form-group">
-              <label>💵 Monto (MXN) *</label>
-              <input type="number" id="expense-amount" class="form-control" step="0.01" min="0" placeholder="0.00" required />
+              <label>💵 Monto (COP) *</label>
+              <input type="number" id="expense-amount" class="form-control" step="1" min="0" placeholder="50000" required />
             </div>
 
             <div class="form-group">
@@ -1008,7 +1008,7 @@
 
             <div class="form-group">
               <label>✈️ Viaje (opcional)</label>
-              <input type="text" id="expense-trip" class="form-control" list="trip-options" placeholder="Ej: Guadalajara Dic 2024" />
+              <input type="text" id="expense-trip" class="form-control" list="trip-options" placeholder="Ej: Cartagena Dic 2024" />
               <datalist id="trip-options"></datalist>
             </div>
 
@@ -1060,6 +1060,7 @@
       serverTimestamp, Timestamp
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // Configuración de Firebase para tu proyecto
     const firebaseConfig = {
       apiKey: "AIzaSyCg9A5CbpKOLV6WspRz87bhWT3wJVbWXDE",
       authDomain: "crm-gastos-viaje.firebaseapp.com",
@@ -1072,16 +1073,28 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Función auxiliar para obtener elementos del DOM
     const $ = id => document.getElementById(id);
-    const formatCurrency = (val) => new Intl.NumberFormat('es-MX', { style:'currency', currency:'MXN' }).format(val || 0);
+    
+    // Función para formatear montos en pesos colombianos (COP) sin decimales
+    // Esto asegura que los valores se muestren como $1.500 en lugar de $1.500,00
+    const formatCurrency = (val) => new Intl.NumberFormat('es-CO', { 
+      style:'currency', 
+      currency:'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(val || 0);
+    
+    // Función para formatear fechas en formato colombiano
     const formatDate = (d) => {
       try {
-        return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+        return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
       } catch(e) {
         return 'Sin fecha';
       }
     };
 
+    // Nombres legibles para las categorías
     const categoryNames = {
       gasolina: 'Gasolina',
       hotel: 'Hotel',
@@ -1089,9 +1102,12 @@
       bebida: 'Bebida'
     };
 
+    // Variables globales para almacenar los gastos y totales por viaje
     let allExpenses = [];
     let tripTotals = {};
 
+    // Función debounce para optimizar las búsquedas en tiempo real
+    // Esto evita hacer múltiples consultas mientras el usuario escribe
     function debounce(fn, delay=300){
       let t;
       return function(...args){
@@ -1100,6 +1116,7 @@
       };
     }
 
+    // Función para mostrar notificaciones toast al usuario
     function showToast(message, type='primary'){
       const c = $("toastContainer");
       const icons = {
@@ -1117,6 +1134,7 @@
       setTimeout(() => t.remove(), 4000);
     }
 
+    // Función para cambiar entre tema claro y oscuro
     function toggleTheme(){
       const html = document.documentElement;
       const theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -1126,16 +1144,19 @@
     }
     window.toggleTheme = toggleTheme;
 
+    // Cargar el tema guardado del usuario
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     $("themeIcon").className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
 
+    // Función para abrir el formulario de agregar gasto
     function openAddForm() {
       clearFormFields();
       new bootstrap.Tab($('[data-bs-target="#add"]')).show();
     }
     window.openAddForm = openAddForm;
 
+    // Cargar todos los viajes disponibles y calcular sus totales
     async function fetchTripsAndPopulate(){
       try{
         const snap = await getDocs(collection(db, "travel_expenses"));
@@ -1166,6 +1187,7 @@
       }
     }
 
+    // Calcular el total de gastos para un viaje específico
     async function computeTotalForTrip(tripKey){
       if(tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey]==='number') return tripTotals[tripKey];
       try{
@@ -1179,6 +1201,7 @@
       }catch(e){ return 0; }
     }
 
+    // Contar cuántos filtros están activos actualmente
     function getActiveFiltersCount(){
       let count = 0;
       if($("filter-search").value.trim()) count++;
@@ -1188,10 +1211,11 @@
       return count;
     }
 
+    // Aplicar todos los filtros activos a la lista de gastos
     function applyFilters(expenses){
       let filtered = [...expenses];
 
-      // Búsqueda
+      // Filtro de búsqueda por texto en la descripción
       const searchText = $("filter-search").value.trim().toLowerCase();
       if(searchText){
         filtered = filtered.filter(e => 
@@ -1199,13 +1223,13 @@
         );
       }
 
-      // Categoría
+      // Filtro por categoría (gasolina, hotel, comida, bebida)
       const category = $("filter-category").value;
       if(category){
         filtered = filtered.filter(e => e.category === category);
       }
 
-      // Mes
+      // Filtro por mes y año
       const monthVal = $("filter-date").value;
       if(monthVal){
         const [y,m] = monthVal.split('-');
@@ -1216,13 +1240,13 @@
         });
       }
 
-      // Viaje
+      // Filtro por viaje específico
       const tripVal = $("filter-trip").value;
       if(tripVal){
         filtered = filtered.filter(e => (e.trip || '') === tripVal);
       }
 
-      // Ordenar
+      // Ordenar según la opción seleccionada
       const sortBy = $("filter-sort").value;
       filtered.sort((a, b) => {
         switch(sortBy){
@@ -1242,6 +1266,7 @@
       return filtered;
     }
 
+    // Actualizar las tarjetas de estadísticas con los totales
     function updateStatistics(expenses){
       const total = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
       const catTotals = {
@@ -1261,6 +1286,7 @@
       updateChart(total, catTotals);
     }
 
+    // Actualizar la gráfica de dona con los porcentajes por categoría
     function updateChart(total, catTotals){
       const ctx = $("expenses-chart");
       if(!ctx) return;
@@ -1298,6 +1324,7 @@
         }
       });
 
+      // Calcular y mostrar los porcentajes
       const pct = (v)=> total > 0 ? Math.round((v/total)*100) : 0;
       $("report-gasolina").textContent = `${pct(catTotals.gasolina)}%`;
       $("report-hotel").textContent = `${pct(catTotals.hotel)}%`;
@@ -1305,6 +1332,7 @@
       $("report-bebida").textContent = `${pct(catTotals.bebida)}%`;
     }
 
+    // Renderizar la tabla de gastos con los filtros aplicados
     function renderExpenses(){
       const tbody = $("expenses-tbody");
       const emptyState = $("emptyState");
@@ -1352,6 +1380,7 @@
         tbody.appendChild(row);
       });
 
+      // Agregar event listeners para los botones de eliminar
       tbody.querySelectorAll(".table-btn-delete").forEach(btn=>{
         btn.addEventListener("click", async ()=>{
           if(!confirm('¿Eliminar este gasto?')) return;
@@ -1360,6 +1389,7 @@
         });
       });
       
+      // Agregar event listeners para los botones de editar
       tbody.querySelectorAll(".table-btn-edit").forEach(btn=>{
         btn.addEventListener("click", async ()=>{
           const id = btn.getAttribute("data-id");
@@ -1371,6 +1401,7 @@
       updateStatistics(filtered);
     }
 
+    // Cargar todos los gastos desde Firebase
     async function loadAllExpenses(){
       try{
         const q = query(collection(db, "travel_expenses"), orderBy("date", "desc"));
@@ -1389,6 +1420,7 @@
       }
     }
 
+    // Agregar un nuevo gasto a Firebase
     async function addExpense(data){
       try{
         const [y,m,d] = data.date.split('-');
@@ -1405,6 +1437,7 @@
       }
     }
 
+    // Actualizar un gasto existente en Firebase
     async function updateExpense(id, data){
       try{
         const [y,m,d] = data.date.split('-');
@@ -1421,6 +1454,7 @@
       }
     }
 
+    // Eliminar un gasto de Firebase
     async function deleteExpense(id){
       try{
         await deleteDoc(doc(db,"travel_expenses", id));
@@ -1432,6 +1466,7 @@
       }
     }
 
+    // Cargar un gasto en el formulario para editarlo
     async function loadExpenseIntoForm(id){
       try{
         const expense = allExpenses.find(e => e.id === id);
@@ -1450,6 +1485,7 @@
       }
     }
 
+    // Limpiar todos los campos del formulario
     function clearFormFields(){
       $("edit-id").value = '';
       $("expense-date").value = new Date().toISOString().split('T')[0];
@@ -1461,6 +1497,7 @@
       $("submitLabel").textContent = 'Guardar Gasto';
     }
 
+    // Validar los datos del formulario antes de guardar
     function validateFormData(data){
       if(!data.date) return { ok:false, msg:'Selecciona una fecha' };
       if(!data.category) return { ok:false, msg:'Selecciona una categoría' };
@@ -1469,13 +1506,16 @@
       return { ok:true };
     }
 
+    // Inicialización cuando el DOM está listo
     document.addEventListener("DOMContentLoaded", async ()=>{
       $("expense-date").value = new Date().toISOString().split('T')[0];
 
       await loadAllExpenses();
 
+      // Event listener para limpiar el formulario
       $("btnClearForm").addEventListener("click", ()=> clearFormFields());
       
+      // Event listener para limpiar los filtros
       $("btnClearFilters").addEventListener("click", ()=>{
         $("filter-search").value = '';
         $("filter-category").value = '';
@@ -1485,6 +1525,7 @@
         renderExpenses();
       });
 
+      // Event listener para el envío del formulario
       $("expense-form").addEventListener("submit", async (e)=>{
         e.preventDefault();
         const btn = e.currentTarget.querySelector('button[type="submit"]');
@@ -1526,6 +1567,7 @@
         }
       });
       
+      // Configurar debounce para el renderizado después de cambios en filtros
       const debouncedRender = debounce(()=> renderExpenses(), 250);
       
       $("filter-search").addEventListener("input", debouncedRender);
@@ -1538,6 +1580,7 @@
         debouncedRender();
       });
       
+      // Sincronizar los tabs superiores con la navegación inferior
       document.querySelectorAll('.nav-tabs button').forEach(btn=>{
         btn.addEventListener('shown.bs.tab', function(){
           const target = this.getAttribute('data-bs-target');
@@ -1550,6 +1593,7 @@
         });
       });
       
+      // Event listeners para la navegación inferior
       document.querySelectorAll('.bottom-nav .nav-item').forEach(i=>{
         i.addEventListener('click', ()=>{
           const t = i.dataset.target || '#expenses';
