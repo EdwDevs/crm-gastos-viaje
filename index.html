@@ -1056,7 +1056,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy, updateDoc,
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc,
       serverTimestamp, Timestamp
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -1165,49 +1165,44 @@
     }
     window.openAddForm = openAddForm;
 
-    // Cargar todos los viajes disponibles y calcular sus totales
-    async function fetchTripsAndPopulate(){
-      try{
-        const snap = await getDocs(collection(db, "travel_expenses"));
-        const trips = new Set();
-        tripTotals = {};
-        
-        snap.forEach(d => {
-          const data = d.data();
-          const t = data.trip;
-          if(t && typeof t === 'string' && t.trim() !== ''){
-            const key = t.trim();
-            trips.add(key);
-            if(!tripTotals[key]) tripTotals[key] = 0;
-            tripTotals[key] += (data.amount || 0);
-          }
-        });
+    // Cargar todos los viajes disponibles y calcular sus totales desde memoria
+    function buildTripsFromExpenses(expenses){
+      const trips = new Set();
+      tripTotals = {};
 
-        const tripArr = Array.from(trips).sort();
-        const selFilter = $("filter-trip");
-        const dataList = $("trip-options");
-        
-        selFilter.innerHTML = '<option value="">Todos</option>' +
-          tripArr.map(t => `<option value="${t}">${t} (${formatCurrency(tripTotals[t])})</option>`).join('');
-        
-        dataList.innerHTML = tripArr.map(t => `<option value="${t}">`).join('');
-      }catch(e){
-        console.error("Error trips:", e);
-      }
+      expenses.forEach(expense => {
+        const t = expense.trip;
+        if(t && typeof t === 'string' && t.trim() !== ''){
+          const key = t.trim();
+          trips.add(key);
+          if(!tripTotals[key]) tripTotals[key] = 0;
+          tripTotals[key] += (expense.amount || 0);
+        }
+      });
+
+      const tripArr = Array.from(trips).sort();
+      const selFilter = $("filter-trip");
+      const dataList = $("trip-options");
+
+      selFilter.innerHTML = '<option value="">Todos</option>' +
+        tripArr.map(t => `<option value="${t}">${t} (${formatCurrency(tripTotals[t])})</option>`).join('');
+
+      dataList.innerHTML = tripArr.map(t => `<option value="${t}">`).join('');
     }
 
     // Calcular el total de gastos para un viaje específico
     async function computeTotalForTrip(tripKey){
-      if(tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey]==='number') return tripTotals[tripKey];
-      try{
-        const base = collection(db,"travel_expenses");
-        let qy;
-        if(tripKey==="") qy=query(base);
-        else qy=query(base, where("trip","==",tripKey));
-        const snap = await getDocs(qy);
-        let tot=0; snap.forEach(s=> tot += Number(s.data().amount)||0 );
-        tripTotals[tripKey]=tot; return tot;
-      }catch(e){ return 0; }
+      if(tripKey === ""){
+        return allExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      }
+      if(tripTotals.hasOwnProperty(tripKey) && typeof tripTotals[tripKey] === 'number'){
+        return tripTotals[tripKey];
+      }
+      const total = allExpenses
+        .filter(expense => (expense.trip || '').trim() === tripKey)
+        .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      tripTotals[tripKey] = total;
+      return total;
     }
 
     // Contar cuántos filtros están activos actualmente
@@ -1421,7 +1416,7 @@
           allExpenses.push({ id: d.id, ...d.data() });
         });
 
-        await fetchTripsAndPopulate();
+        buildTripsFromExpenses(allExpenses);
         renderExpenses();
       }catch(e){
         console.error("Load error:", e);
