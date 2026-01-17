@@ -1427,8 +1427,8 @@
     // Agregar un nuevo gasto a Firebase
     async function addExpense(data){
       try{
-        const [y,m,d] = data.date.split('-');
-        const localDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+        const localDate = parseDateInput(data.date);
+        if(!localDate) return false;
         await addDoc(collection(db,"travel_expenses"), {
           ...data,
           date: Timestamp.fromDate(localDate),
@@ -1444,8 +1444,8 @@
     // Actualizar un gasto existente en Firebase
     async function updateExpense(id, data){
       try{
-        const [y,m,d] = data.date.split('-');
-        const localDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+        const localDate = parseDateInput(data.date);
+        if(!localDate) return false;
         await updateDoc(doc(db,"travel_expenses", id), {
           ...data,
           date: Timestamp.fromDate(localDate),
@@ -1502,9 +1502,21 @@
       $("submitLabel").textContent = 'Guardar Gasto';
     }
 
+    // Parsear fecha en formato YYYY-MM-DD y validar
+    function parseDateInput(value){
+      if(!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+      const [y, m, d] = value.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      if(Number.isNaN(date.getTime())) return null;
+      if(date.getFullYear() !== y || date.getMonth() !== (m - 1) || date.getDate() !== d) return null;
+      return date;
+    }
+
     // Validar los datos del formulario antes de guardar
     function validateFormData(data){
       if(!data.date) return { ok:false, msg:'Selecciona una fecha' };
+      const parsedDate = parseDateInput(data.date);
+      if(!parsedDate) return { ok:false, msg:'Fecha inválida' };
       if(!data.category) return { ok:false, msg:'Selecciona una categoría' };
       if(!data.description || String(data.description).trim().length < 3) return { ok:false, msg:'Descripción muy corta' };
       if(!data.amount || Number(data.amount) <= 0) return { ok:false, msg:'Monto inválido' };
