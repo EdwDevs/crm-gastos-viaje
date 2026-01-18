@@ -627,6 +627,32 @@
       padding: 24px;
     }
 
+    .form-header {
+      margin-bottom: 16px;
+    }
+
+    .form-title {
+      font-size: 1.2rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .form-subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 16px;
+    }
+
+    @media (min-width: 640px) {
+      .form-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
     .form-group {
       margin-bottom: 16px;
     }
@@ -639,6 +665,11 @@
       margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    .form-group label.required::after {
+      content: " *";
+      color: var(--danger);
     }
 
     .form-actions {
@@ -1016,39 +1047,48 @@
           <form id="expense-form" class="form-section">
             <input type="hidden" id="edit-id" />
 
-            <div class="form-group">
-              <label>📅 Fecha *</label>
-              <input type="date" id="expense-date" class="form-control" required />
+            <div class="form-header">
+              <h2 class="form-title">Registrar gasto</h2>
+              <p class="form-subtitle">Campos obligatorios marcados con *</p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="required">📅 Fecha</label>
+                <input type="date" id="expense-date" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label class="required">📂 Categoría</label>
+                <select id="expense-category" class="form-select" required>
+                  <option value="">Selecciona una categoría</option>
+                  <option value="gasolina">⛽ Gasolina</option>
+                  <option value="hotel">🏨 Hotel</option>
+                  <option value="comida">🍽️ Comida</option>
+                  <option value="bebida">🥤 Bebida</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-group">
-              <label>📂 Categoría *</label>
-              <select id="expense-category" class="form-select" required>
-                <option value="">Selecciona una categoría</option>
-                <option value="gasolina">⛽ Gasolina</option>
-                <option value="hotel">🏨 Hotel</option>
-                <option value="comida">🍽️ Comida</option>
-                <option value="bebida">🥤 Bebida</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>📝 Descripción *</label>
+              <label class="required">📝 Descripción</label>
               <input type="text" id="expense-description" class="form-control" placeholder="Ej: Gasolina en estación Terpel" required />
             </div>
 
-            <div class="form-group">
-              <label>💵 Monto (COP) *</label>
-              <input type="number" id="expense-amount" class="form-control" step="1" min="0" inputmode="numeric" pattern="[0-9]*" placeholder="50000" required />
-            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="required">💵 Monto (COP)</label>
+                <input type="number" id="expense-amount" class="form-control" step="1" min="0" inputmode="numeric" pattern="[0-9]*" placeholder="50000" required />
+              </div>
 
-            <div class="form-group">
-              <label>💳 Método de Pago</label>
-              <select id="expense-payment-method" class="form-select">
-                <option value="Efectivo">💵 Efectivo</option>
-                <option value="Tarjeta">💳 Tarjeta</option>
-                <option value="Transferencia">📱 Transferencia</option>
-              </select>
+              <div class="form-group">
+                <label>💳 Método de Pago</label>
+                <select id="expense-payment-method" class="form-select">
+                  <option value="Efectivo">💵 Efectivo</option>
+                  <option value="Tarjeta">💳 Tarjeta</option>
+                  <option value="Transferencia">📱 Transferencia</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-group">
