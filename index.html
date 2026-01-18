@@ -1246,7 +1246,7 @@
     // Función para abrir el formulario de agregar gasto
     function openAddForm() {
       clearFormFields();
-      new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+      new bootstrap.Tab(document.querySelector('[data-bs-target="#add"]')).show();
     }
     window.openAddForm = openAddForm;
 
@@ -1483,7 +1483,7 @@
         btn.addEventListener("click", async ()=>{
           const id = btn.getAttribute("data-id");
           await loadExpenseIntoForm(id);
-          new bootstrap.Tab($('[data-bs-target="#add"]')).show();
+          new bootstrap.Tab(document.querySelector('[data-bs-target="#add"]')).show();
         });
       });
 
@@ -1661,7 +1661,7 @@
           if(ok) {
             clearFormFields();
             await loadAllExpenses();
-            new bootstrap.Tab($('[data-bs-target="#expenses"]')).show();
+            new bootstrap.Tab(document.querySelector('[data-bs-target="#expenses"]')).show();
           }
 
         } finally {
